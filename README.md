@@ -6,3 +6,10 @@ Implementation of Spatial Networks based on [Rémy Cabazet lecture](https://www.
 >
 > - learning about Spatial Networks
 > - understanding how to create a Python package
+
+## TODO
+
+- [ ] Add tests
+- [ ] Add simpler drawing functions
+- [ ] Better computations
+- [ ] Add examples
