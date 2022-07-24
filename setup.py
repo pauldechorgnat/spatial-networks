@@ -5,11 +5,11 @@ from os import path
 from os import environ
 
 HERE = path.abspath(path.dirname(__file__))
-VERSION = environ.get("VERSION", "0.0.1")
+VERSION = environ.get("VERSION")
 if not VERSION:
     VERSION = "0.0.1"
-    environ["VERSION"] = VERSION
 
+environ["VERSION"] = VERSION
 print(f"VERSION: {VERSION}")
 
 
