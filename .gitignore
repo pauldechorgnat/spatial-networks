@@ -2,7 +2,9 @@ venv
 venv-dev
 .ipynb_checkpoints
 *.ipynb
-__pycache__
+**/__pycache__
 build
 dist
 spatial_networks.egg-info
+notes.md
+docs
