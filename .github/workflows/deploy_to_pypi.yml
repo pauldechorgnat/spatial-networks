@@ -32,5 +32,5 @@ jobs:
       with:
         user: pauldechorgnat
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy
+        repository_url: https://test.pypi.org/legacy/
         verbose: true
