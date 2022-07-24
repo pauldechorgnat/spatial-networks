@@ -19,8 +19,7 @@ jobs:
     - name: Build the library
       # if: startsWith(github.ref, 'refs/tags/v')
       run: |
-        python3 -m pip install -U
-        pip3 install wheel twine
+        python3 -m pip install wheel twine
         python3 setup.py sdist bdist_wheel
         python3 -m twine check dist/*
         echo $VERSION
