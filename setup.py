@@ -9,7 +9,6 @@ VERSION = environ.get("VERSION")
 if not VERSION:
     VERSION = "0.0.1"
 
-environ["VERSION"] = VERSION
 print(f"VERSION: {VERSION}")
 
 
