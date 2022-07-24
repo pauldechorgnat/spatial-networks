@@ -3,11 +3,23 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 from os import environ
+import requests
 
 HERE = path.abspath(path.dirname(__file__))
 VERSION = environ.get("VERSION")
+DEBUG = True
+
+if not DEBUG:
+    pypi_url = "https://pypi.org/spatial-network/json"
+else:
+    pypi_url = "https://test.pypi.org/spatial-network/json"
+
 if not VERSION:
-    VERSION = "0.0.1"
+    response = requests.get(url=pypi_url)
+
+    latest_version = response.json()["info"]["version"]
+    version_numbers = latest_version.split(".")
+    VERSION = f"{version_numbers[0]}.{version_numbers[1]}.{int(version_numbers[0]) + 1}"
 
 print(f"VERSION: {VERSION}")
 
