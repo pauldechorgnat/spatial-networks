@@ -1,0 +1,40 @@
+name: "Deploy package to Pypi"
+on:
+  push:
+    branches:
+      - "master"
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get VERSION
+      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
+    - name: Build the library
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        python3 -m pip install -U
+        pip3 install wheel twine
+        python3 setup.py sdist bdist_wheel
+        echo $VERSION
+      env:
+        VERSION: ${{ steps.vars.outputs.tag }}
+
+    - name: Check build
+      run: twine check dist/*
+
+
+    # - name: Publish a Python distribution to PyPI
+    #   if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    #   uses: pypa/gh-action-pypi-publish@release/v1
+    #   with:
+    #     user: pauldechorgnat
+    #     password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+    #     repository_url: https://test.pypi.org/
+    #     verbose: true
