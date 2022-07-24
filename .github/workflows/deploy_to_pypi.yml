@@ -23,6 +23,7 @@ jobs:
         python3 setup.py sdist bdist_wheel
         python3 -m twine check dist/*
         echo VERSION: $VERSION
+        echo ::set-output name=tag::$VERSION
       env:
         VERSION: ${{ steps.vars.outputs.tag }}
 

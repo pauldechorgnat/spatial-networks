@@ -6,13 +6,13 @@ from os import environ
 
 HERE = path.abspath(path.dirname(__file__))
 VERSION = environ.get("VERSION", "0.0.1")
-if not VERSION: 
+if not VERSION:
     VERSION = "0.0.1"
-    os.environ["VERSION] = VERSION
+    os.environ["VERSION"] = VERSION
 
 print(f"VERSION: {VERSION}")
-    
-    
+
+
 with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
