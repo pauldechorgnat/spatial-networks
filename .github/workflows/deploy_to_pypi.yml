@@ -17,7 +17,7 @@ jobs:
       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
     - name: Build the library
-      if: startsWith(github.ref, 'refs/tags/v')
+      # if: startsWith(github.ref, 'refs/tags/v')
       run: |
         python3 -m pip install -U
         pip3 install wheel twine
