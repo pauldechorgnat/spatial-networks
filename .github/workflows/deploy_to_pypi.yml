@@ -27,7 +27,7 @@ jobs:
         VERSION: ${{ steps.vars.outputs.tag }}
 
     - name: Check build
-      run: twine check dist/*
+      run: python3 -m twine check dist/*
 
 
     # - name: Publish a Python distribution to PyPI
