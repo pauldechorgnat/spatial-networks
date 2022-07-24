@@ -19,7 +19,7 @@ if not VERSION:
 
     latest_version = response.json()["info"]["version"]
     version_numbers = latest_version.split(".")
-    VERSION = f"{version_numbers[0]}.{version_numbers[1]}.{int(version_numbers[0]) + 1}"
+    VERSION = f"{version_numbers[0]}.{version_numbers[1]}.{int(version_numbers[2]) + 1}"
 
 print(f"VERSION: {VERSION}")
 
