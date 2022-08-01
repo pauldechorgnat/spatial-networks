@@ -7,12 +7,19 @@ Implementation of Spatial Networks based on [Rémy Cabazet lecture](https://www.
 > - learning about Spatial Networks
 > - understanding how to create a Python package
 
+## RoadMap
+
+- [ ] Rewrite early code to integrate shapely
+
 ## TODO
 
 - [ ] Add tests
 - [ ] Add simpler drawing functions
 - [ ] Better computations
 - [ ] Add examples
+- [ ] Find datasets
+
+## Resources
 
 > - [Tutorial](https://towardsdatascience.com/deep-dive-create-and-publish-your-first-python-library-f7f618719e14)
 > - [Related](https://github.com/tomalrussell/snkit)
