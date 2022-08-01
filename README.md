@@ -10,6 +10,7 @@ Implementation of Spatial Networks based on [Rémy Cabazet lecture](https://www.
 ## RoadMap
 
 - [ ] Rewrite early code to integrate shapely
+- [ ] Use releases so that automatic push is made to pypi
 
 ## TODO
 
