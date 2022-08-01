@@ -1,37 +1,37 @@
-name: "Deploy package to Pypi"
-on:
-  push:
-    branches:
-      - "master"
+# name: "Deploy package to Pypi"
+# on:
+#   push:
+#     branches:
+#       - "master"
 
-  workflow_dispatch:
+#   workflow_dispatch:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v2
+#     steps:
+#     - uses: actions/checkout@v2
 
-    - name: Get VERSION
-      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+#     - name: Get VERSION
+#       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
-    - name: Build the library
-      # if: startsWith(github.ref, 'refs/tags/v')
-      run: |
-        python3 -m pip install -r requirements-dev.txt
-        python3 setup.py sdist bdist_wheel
-        python3 -m twine check dist/*
-        echo VERSION: $VERSION
-      env:
-        VERSION: ${{ steps.vars.outputs.tag }}
-        DEBUG: true
+#     - name: Build the library
+#       # if: startsWith(github.ref, 'refs/tags/v')
+#       run: |
+#         python3 -m pip install -r requirements-dev.txt
+#         python3 setup.py sdist bdist_wheel
+#         python3 -m twine check dist/*
+#         echo VERSION: $VERSION
+#       env:
+#         VERSION: ${{ steps.vars.outputs.tag }}
+#         DEBUG: true
 
-    - name: Publish a Python distribution to PyPI
-      # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
-        verbose: true
+#     - name: Publish a Python distribution to PyPI
+#       # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+#       uses: pypa/gh-action-pypi-publish@release/v1
+#       with:
+#         user: __token__
+#         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+#         repository_url: https://test.pypi.org/legacy/
+#         verbose: true
