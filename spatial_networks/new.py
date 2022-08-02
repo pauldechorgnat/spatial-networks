@@ -10,6 +10,9 @@ from networkx import DiGraph
 from networkx.drawing import draw_networkx_nodes
 from networkx.drawing import draw_networkx_edges
 
+from utils import check_node
+from utils import check_edge
+
 import warnings
 
 warnings.filterwarnings("error")
@@ -22,17 +25,8 @@ class SpatialGraph(Graph):
         # adding nodes
         dimensions = []
         for n in nodes:
-            if ("name" not in n) or ("geometry" not in n):
-                raise ValueError(
-                    "Nodes should be dictionaries with 'name' and 'geometry' keys"
-                )
-            if not isinstance(n["geometry"], Point):
-                raise TypeError(
-                    "'geometry' key of nodes should be an instance of class shapely.Point"
-                )
+            self.add_node(n)
             dimensions.append(n["geometry"].has_z)
-
-            self.add_node(n["name"], **n)
 
         if sum(dimensions) == 1:
             self.dimension = 3
@@ -45,30 +39,17 @@ class SpatialGraph(Graph):
         self.edge_properties = {}
 
         for e in edges:
-            if ("start" not in e) or ("end" not in e):
-                raise ValueError(
-                    "Edges should be dictionaries with 'start' and 'end' keys"
-                )
-            if "geometry" not in e:
-                try:
-                    start_node = self.node_properties[e["start"]]
-                    end_node = self.node_properties[e["end"]]
 
-                    e["geometry"] = LineString(
-                        [start_node["geometry"], end_node["geometry"]]
-                    )
-                except KeyError as e:
-                    raise KeyError(f"Node '{e}' is not in the nodes")
-            else:
-                if not isinstance(e["geometry"], LineString):
-                    raise TypeError(
-                        "'geometry' key of edges should be an instance of class shapely.LineString"
-                    )
-            if "length" not in e:
-                e["length"] = e["geometry"].length
-
-            self.add_edge(e["start"], e["end"], **e)
+            self.add_edge(e)
             self.edge_properties[(e["start"], e["end"])] = e
+
+    def add_node(self, new_node):
+        node = check_node(node=new_node)
+        Graph.add_node(self, node_for_adding=node["name"], **node)
+
+    def add_edge(self, new_edge):
+        edge = check_edge(edge=new_edge, nodes_dict=self.node_properties)
+        Graph.add_edge(self, u_of_edge=edge["start"], v_of_edge=edge["end"], **edge)
 
     def draw_nodes(self):
         xs, ys = [], []
