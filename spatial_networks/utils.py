@@ -1,7 +1,10 @@
 import numpy as np
+from networkx import Graph
 
+from itertools import combinations
 from shapely.geometry import Point
 from shapely.geometry import LineString
+from shapely.geometry import Polygon
 
 
 def generate_random_graph_data(n_nodes=200, edge_probability=0.3):
@@ -53,3 +56,39 @@ def check_edge(edge: dict, nodes_dict: dict):
         edge["length"] = edge["geometry"].length
 
     return edge
+
+
+def get_closed_triangles(graph: Graph, nodes: list[str] = []):
+    if len(nodes) == 0:
+        nodes = graph.nodes
+    triangles = {}
+
+    for n in nodes:
+        neighbors = graph.neighbors()
+        for n1, n2 in combinations(neighbors, 2):
+            if graph.has_edge(n1, n2):
+                triangles[n] = triangles.get(n, []) + [(n, n1, n2)]
+
+    return triangles
+
+
+def get_open_triangles(graph: Graph, nodes: list[str] = []):
+    if len(nodes) == 0:
+        nodes = graph.nodes
+    triangles = {}
+
+    for n in nodes:
+        neighbors = graph.neighbors()
+        for n1, n2 in combinations(neighbors, 2):
+            if not graph.has_edge(n1, n2):
+                triangles[n] = triangles.get(n, []) + [(n, n1, n2)]
+
+    return triangles
+
+
+def transform_triangles_to_faces(graph: Graph, triangles: list = []):
+    faces = []
+    for t in triangles:
+        faces.append(Polygon([graph.node_properties[n]["geometry"] for n in t]))
+
+    return faces

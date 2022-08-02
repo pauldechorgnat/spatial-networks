@@ -1,7 +1,7 @@
-from spatial_networks.spatial_networks import SpatialNetwork
-from spatial_networks.spatial_networks import RandomGeometricGraph
-from spatial_networks.spatial_networks import StarNetwork
-from spatial_networks.spatial_networks import StarAndRingNetwork
+# from spatial_networks.spatial_networks import SpatialNetwork
+# from spatial_networks.spatial_networks import RandomGeometricGraph
+# from spatial_networks.spatial_networks import StarNetwork
+# from spatial_networks.spatial_networks import StarAndRingNetwork
 
 import warnings
 
