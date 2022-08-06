@@ -1,15 +1,19 @@
 # Spatial Networks
 
-Implementation of Spatial Networks based on [Rémy Cabazet lecture](https://www.youtube.com/watch?v=KsGV_FHwhfY).
+A small library based on NetworkX and Shapely to manipulate Spatial Networks.
+
+![](cayley_tree.png)
 
 > This repository has two objectives:
 >
 > - learning about Spatial Networks
 > - understanding how to create a Python package
 
+If you want to see how this works, or at least where this is going, you can find a first notebook in the [notebooks](notebooks/01_introduction.ipynb) folder.
+
 ## RoadMap
 
-- [ ] Rewrite early code to integrate shapely
+- [x] Rewrite early code to integrate shapely
 - [ ] Use releases so that automatic push is made to pypi
 
 ## TODO
@@ -19,6 +23,12 @@ Implementation of Spatial Networks based on [Rémy Cabazet lecture](https://www.
 - [ ] Better computations
 - [ ] Add examples
 - [ ] Find datasets
+
+## Inspiration
+
+- [Rémy Cabazet lecture](https://www.youtube.com/watch?v=KsGV_FHwhfY)
+- [Marc Bathelemy book](https://link.springer.com/book/10.1007/978-3-030-94106-2)
+
 
 ## Resources
 
