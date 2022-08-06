@@ -1,12 +1,14 @@
-# from spatial_networks.spatial_networks import SpatialNetwork
-# from spatial_networks.spatial_networks import RandomGeometricGraph
-# from spatial_networks.spatial_networks import StarNetwork
-# from spatial_networks.spatial_networks import StarAndRingNetwork
+from spatial_networks.spatial_networks import SpatialGraph
+from spatial_networks.spatial_networks import SpatialNode
+from spatial_networks.spatial_networks import SpatialEdge
 
-import warnings
+from spatial_networks.spatial_networks import RandomSpatialGraph
+from spatial_networks.spatial_networks import RandomGeometricGraph
+from spatial_networks.spatial_networks import SoftRGG
+from spatial_networks.spatial_networks import StarSpatialGraph
+from spatial_networks.spatial_networks import StarAndRingNetwork
 
-warnings.warn(
-    """
-    This package is a demonstration package (for now on). It has not been tested and should not be used for important tasks.
-    """
-)
+# from utils import check_node
+# from utils import check_edge
+
+from . import utils
