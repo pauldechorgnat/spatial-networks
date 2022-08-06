@@ -8,3 +8,5 @@ dist
 spatial_networks.egg-info
 notes.md
 docs
+.env
+!notebooks/0*.ipynb
