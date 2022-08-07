@@ -21,6 +21,9 @@ from .utils import (
     check_node,
     create_circle_arc,
     generate_star_spatial_network_data,
+    generate_square_lattice_data,
+    generate_triangle_lattice_data,
+    generate_hexagonal_lattice_data,
     SpatialEdge,
     SpatialNode,
 )
@@ -61,6 +64,7 @@ class SpatialGraph(Graph):
         """
         Graph.__init__(self=self)
         self.node_properties = {}
+        self.edge_properties = {}
 
         dimensions = []
         for n in nodes:
@@ -112,8 +116,8 @@ class SpatialGraph(Graph):
     def draw_edges(self, edge_color="#01577D", ax=None):
         if not ax:
             fig, ax = plt.subplots(1, 1)
-        for e in self.edge_properties:
-            coordinates = np.asarray(self.edge_properties[e]["geometry"].coords)
+        for e in self.edges:
+            coordinates = np.asarray(self.edges[e]["geometry"].coords)
             ax.plot(coordinates[:, 0], coordinates[:, 1], color=edge_color, zorder=-1)
         return ax
 
@@ -314,6 +318,59 @@ class StarAndRingNetwork(SpatialGraph):
                         geometry=arc,
                     )
                 )
+        SpatialGraph.__init__(self, nodes=nodes, edges=edges)
+
+
+class SquareLattice(SpatialGraph):
+    """A regular square lattice"""
+
+    def __init__(
+        self,
+        nb_lines: int = 5,
+        squares_per_line: int = 5,
+        square_height: float = 1.0,
+        square_width: float = 1.0,
+    ):
+        nodes, edges = generate_square_lattice_data(
+            nb_lines=nb_lines,
+            squares_per_line=squares_per_line,
+            square_height=square_height,
+            square_width=square_width,
+        )
+
+        SpatialGraph.__init__(self, nodes=nodes, edges=edges)
+
+
+class TriangleLattice(SpatialGraph):
+    """A regular triangle lattice"""
+
+    def __init__(
+        self,
+        triangles_per_line: int = 5,
+        nb_lines: int = 5,
+        triangle_base: float = 1.0,
+        triangle_height: float = 1.0,
+    ):
+        nodes, edges = generate_triangle_lattice_data(
+            nb_lines=nb_lines,
+            triangles_per_line=triangles_per_line,
+            triangle_base=triangle_base,
+            triangle_height=triangle_height,
+        )
+        SpatialGraph.__init__(self, nodes=nodes, edges=edges)
+
+
+class HexagonalLattice(SpatialGraph):
+    """A regular hexagonal lattice"""
+
+    def __init__(
+        self, hexagons_per_line: int = 3, nb_lines: int = 4, hexagon_base: int = 1.0
+    ):
+        nodes, edges = generate_hexagonal_lattice_data(
+            hexagons_per_line=hexagons_per_line,
+            nb_lines=nb_lines,
+            hexagon_base=hexagon_base,
+        )
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
 
 
