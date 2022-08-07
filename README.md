@@ -2,7 +2,7 @@
 
 A small library based on NetworkX and Shapely to manipulate Spatial Networks.
 
-![](cayley_tree.png)
+<center><img src="cayley_tree.png"></center>
 
 > This repository has two objectives:
 >
