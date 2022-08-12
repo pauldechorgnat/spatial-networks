@@ -374,6 +374,28 @@ class HexagonalLattice(SpatialGraph):
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
 
 
+class RegularTree(SpatialGraph):
+    def __init__(
+        self,
+        branching_factor: int = 3,
+        tree_depth: int = 4,
+        leaf_spacing: float = 1.0,
+        step_size: float = 1.0,
+        root: Point = Point(0, 0),
+        rotation=0,
+    ):
+        nodes, edges = generate_regular_tree_data(
+            branching_factor=branching_factor,
+            tree_depth=tree_depth,
+            leaf_spacing=leaf_spacing,
+            step_size=step_size,
+            root=root,
+            rotation=rotation,
+        )
+
+        SpatialGraph.__init__(self, nodes=nodes, edges=edges)
+
+
 if __name__ == "__main__":
 
     # random_spatial_graph = RandomSpatialGraph(number_of_nodes=200)

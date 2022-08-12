@@ -228,3 +228,46 @@ def generate_hexagonal_lattice_data(
     nodes = nodes_dict.values()
 
     return nodes, edges
+
+
+def generate_regular_tree_data(
+    branching_factor: int = 3,
+    tree_depth: int = 4,
+    leaf_spacing: float = 1.0,
+    step_size: int = -1.0,
+    root: Point = Point(0, 0),
+    rotation=0,
+):
+
+    x_root, y_root = root.x, root.y
+
+    nodes, edges = [SpatialNode(name="node_0_0", geometry=root)], []
+
+    final_width = (branching_factor ** (tree_depth)) * leaf_spacing
+
+    for d in range(1, tree_depth + 1):
+
+        current_width = final_width - final_width / (branching_factor**d)
+        number_of_nodes = branching_factor**d
+
+        for n in range(0, number_of_nodes):
+
+            x_delta = -(current_width / 2) + (current_width * n / (number_of_nodes - 1))
+            y_delta = d * step_size
+
+            cos = np.cos(rotation * 2 * np.pi / 360)
+            sin = np.sin(rotation * 2 * np.pi / 360)
+            x = x_root + cos * x_delta + sin * y_delta
+            y = y_root - sin * x_delta + cos * y_delta
+
+            nodes.append(SpatialNode(name=f"node_{d}_{n}", geometry=Point(x, y)))
+
+            if d > 0:
+                edges.append(
+                    SpatialEdge(
+                        start=f"node_{d - 1}_{n // branching_factor}",
+                        end=f"node_{d}_{n}",
+                    )
+                )
+
+    return nodes, edges

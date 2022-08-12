@@ -10,6 +10,7 @@ from .generators import generate_star_spatial_network_data
 from .generators import generate_square_lattice_data
 from .generators import generate_triangle_lattice_data
 from .generators import generate_hexagonal_lattice_data
+from .generators import generate_regular_tree_data
 
 # geometry_utils
 from .geometry_utils import create_circle
