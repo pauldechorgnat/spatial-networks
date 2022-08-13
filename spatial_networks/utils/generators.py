@@ -12,10 +12,11 @@ def generate_random_graph_data(
     edge_probability: float = 0.01,
     position_distribution: callable = np.random.uniform,
     dimension: int = 2,
+    prefix: str = "random",
 ):
     nodes = [
         SpatialNode(
-            name=f"node_{i}", geometry=Point(position_distribution(size=dimension))
+            name=f"{prefix}_{i}", geometry=Point(position_distribution(size=dimension))
         )
         for i in range(n_nodes)
     ]
@@ -39,12 +40,12 @@ def generate_random_graph_data(
 
 
 def generate_star_spatial_network_data(
-    number_of_branches: int = 6, nodes_per_branch: int = 6
+    number_of_branches: int = 6, nodes_per_branch: int = 6, prefix: str = "star"
 ):
     points = {
-        "node_0_0": Point([0, 0]),
+        f"{prefix}_0_0": Point([0, 0]),
         **{
-            f"node_{r}_{k}": Point(
+            f"{prefix}_{r}_{k}": Point(
                 (
                     r * np.cos(2 * np.pi * k / number_of_branches + np.pi / 2),
                     r * np.sin(2 * np.pi * k / number_of_branches + np.pi / 2),
@@ -60,17 +61,19 @@ def generate_star_spatial_network_data(
     for k in range(number_of_branches):
         edges.append(
             SpatialEdge(
-                start="node_0_0",
-                end=f"node_1_{k}",
-                geometry=LineString([points["node_0_0"], points[f"node_1_{k}"]]),
+                start=f"{prefix}_0_0",
+                end=f"{prefix}_1_{k}",
+                geometry=LineString(
+                    [points[f"{prefix}_0_0"], points[f"{prefix}_1_{k}"]]
+                ),
             )
         )
     # branches
     # for i in range(1, 1 + number_of_branches * nodes_per_branch - number_of_branches):
     for r in range(1, nodes_per_branch - 1):
         for k in range(number_of_branches):
-            node_start = f"node_{r}_{k}"
-            node_end = f"node_{r + 1}_{k}"
+            node_start = f"{prefix}_{r}_{k}"
+            node_end = f"{prefix}_{r + 1}_{k}"
             edges.append(
                 SpatialEdge(
                     start=node_start,
@@ -86,12 +89,14 @@ def generate_square_lattice_data(
     square_height: float = 0.5,
     squares_per_line: int = 5,
     nb_lines: int = 5,
+    prefix: str = "square",
 ):
     lattice_height = nb_lines + 1
     lattice_width = squares_per_line + 1
     nodes = [
         SpatialNode(
-            name=f"node_{w}_{h}", geometry=Point(w * square_width, h * square_height)
+            name=f"{prefix}_{w}_{h}",
+            geometry=Point(w * square_width, h * square_height),
         )
         for w in range(lattice_width)
         for h in range(lattice_height)
@@ -99,15 +104,15 @@ def generate_square_lattice_data(
 
     edges = [
         SpatialEdge(
-            start=f"node_{w}_{h}",
-            end=f"node_{w}_{h + 1}",
+            start=f"{prefix}_{w}_{h}",
+            end=f"{prefix}_{w}_{h + 1}",
         )
         for h in range(lattice_height - 1)
         for w in range(lattice_width)
     ] + [
         SpatialEdge(
-            start=f"node_{w}_{h}",
-            end=f"node_{w + 1}_{h}",
+            start=f"{prefix}_{w}_{h}",
+            end=f"{prefix}_{w + 1}_{h}",
         )
         for h in range(lattice_height)
         for w in range(lattice_width - 1)
@@ -121,12 +126,13 @@ def generate_triangle_lattice_data(
     triangles_per_line: int = 5,
     triangle_base: float = 1.0,
     triangle_height: float = 1.0,
+    prefix: str = "triangle",
 ):
     lattice_width = triangles_per_line + 1
     lattice_height = nb_lines + 1
     nodes = [
         SpatialNode(
-            name=f"node_{w}_{h}",
+            name=f"{prefix}_{w}_{h}",
             geometry=Point(
                 w * triangle_base + (0.5 * triangle_base if h % 2 == 1 else 0),
                 h * triangle_height,
@@ -138,32 +144,32 @@ def generate_triangle_lattice_data(
     edges = (
         [
             SpatialEdge(
-                start=f"node_{w}_{h}",
-                end=f"node_{w}_{h + 1}",
+                start=f"{prefix}_{w}_{h}",
+                end=f"{prefix}_{w}_{h + 1}",
             )
             for h in range(lattice_height - 1)
             for w in range(lattice_width)
         ]
         + [
             SpatialEdge(
-                start=f"node_{w}_{h}",
-                end=f"node_{w + 1}_{h}",
+                start=f"{prefix}_{w}_{h}",
+                end=f"{prefix}_{w + 1}_{h}",
             )
             for h in range(lattice_height)
             for w in range(lattice_width - 1)
         ]
         + [
             SpatialEdge(
-                start=f"node_{w}_{h}",
-                end=f"node_{w + 1}_{h + 1}",
+                start=f"{prefix}_{w}_{h}",
+                end=f"{prefix}_{w + 1}_{h + 1}",
             )
             for h in range(1, lattice_height - 1, 2)
             for w in range(lattice_width - 1)
         ]
         + [
             SpatialEdge(
-                start=f"node_{w}_{h}",
-                end=f"node_{w - 1}_{h + 1}",
+                start=f"{prefix}_{w}_{h}",
+                end=f"{prefix}_{w - 1}_{h + 1}",
             )
             for h in range(0, lattice_height - 1, 2)
             for w in range(1, lattice_width)
@@ -174,7 +180,10 @@ def generate_triangle_lattice_data(
 
 
 def generate_hexagonal_lattice_data(
-    hexagons_per_line: int = 3, nb_lines: int = 4, hexagon_base: int = 1.0
+    hexagons_per_line: int = 3,
+    nb_lines: int = 4,
+    hexagon_base: int = 1.0,
+    prefix: str = "hexagon",
 ):
     half_height = np.sqrt(3) / 2 * hexagon_base
     small_width = hexagon_base / 2
@@ -194,7 +203,7 @@ def generate_hexagonal_lattice_data(
 
     for i in cols:
         for j in rows:
-            node_name = f"node_{i}_{j}"
+            node_name = f"{prefix}_{i}_{j}"
             nodes_dict[node_name] = SpatialNode(
                 name=node_name,
                 geometry=Point(
@@ -205,20 +214,20 @@ def generate_hexagonal_lattice_data(
                 ),
             )
 
-    nodes_dict.pop(f"node_0_{M + 1}")
-    nodes_dict.pop(f"node_{n}_{(M + 1) * (n % 2)}")
+    nodes_dict.pop(f"{prefix}_0_{M + 1}")
+    nodes_dict.pop(f"{prefix}_{n}_{(M + 1) * (n % 2)}")
 
     for i in cols:
         for j in rows[: M + 1]:
-            start_name = f"node_{i}_{j}"
-            end_name = f"node_{i}_{j + 1}"
+            start_name = f"{prefix}_{i}_{j}"
+            end_name = f"{prefix}_{i}_{j + 1}"
             if (start_name in nodes_dict) and (end_name in nodes_dict):
                 edges.append(SpatialEdge(start=start_name, end=end_name))
 
     for i in cols[:n]:
         for j in rows:
-            start_name = f"node_{i}_{j}"
-            end_name = f"node_{i + 1}_{j}"
+            start_name = f"{prefix}_{i}_{j}"
+            end_name = f"{prefix}_{i + 1}_{j}"
             if (
                 (start_name in nodes_dict)
                 and (end_name in nodes_dict)
@@ -237,11 +246,12 @@ def generate_regular_tree_data(
     step_size: int = -1.0,
     root: Point = Point(0, 0),
     rotation=0,
+    prefix: str = "tree",
 ):
 
     x_root, y_root = root.x, root.y
 
-    nodes, edges = [SpatialNode(name="node_0_0", geometry=root)], []
+    nodes, edges = [SpatialNode(name=f"{prefix}_0_0", geometry=root)], []
 
     final_width = (branching_factor ** (tree_depth)) * leaf_spacing
 
@@ -260,13 +270,13 @@ def generate_regular_tree_data(
             x = x_root + cos * x_delta + sin * y_delta
             y = y_root - sin * x_delta + cos * y_delta
 
-            nodes.append(SpatialNode(name=f"node_{d}_{n}", geometry=Point(x, y)))
+            nodes.append(SpatialNode(name=f"{prefix}_{d}_{n}", geometry=Point(x, y)))
 
             if d > 0:
                 edges.append(
                     SpatialEdge(
-                        start=f"node_{d - 1}_{n // branching_factor}",
-                        end=f"node_{d}_{n}",
+                        start=f"{prefix}_{d - 1}_{n // branching_factor}",
+                        end=f"{prefix}_{d}_{n}",
                     )
                 )
 
