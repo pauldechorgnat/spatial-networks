@@ -423,6 +423,83 @@ class RegularTree(SpatialGraph):
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
 
 
+class GridTree(SpatialGraph):
+    def __init__(
+        self,
+        suburb_depth: int = 4,
+        suburb_branching_factor: int = 2,
+        suburb_leaf_spacing: float = 1.0,
+        suburb_step_size: float = 1.0,
+        suburb_spacing: float = 1.0,
+        inner_square_height: float = 1.0,
+        inner_square_width: float = 1.0,
+        inner_semi_width: int = 5,
+        inner_semi_height: int = 5,
+    ):
+
+        # generating inner lattice
+        nodes, edges = generate_square_lattice_data(
+            square_height=inner_square_height,
+            square_width=inner_square_width,
+            squares_per_line=2 * inner_semi_width,
+            nb_lines=2 * inner_semi_height,
+            prefix="inner",
+        )
+
+        anchors = [
+            Point(-suburb_spacing, inner_semi_height * inner_square_height),  # west
+            Point(
+                2 * inner_semi_width * inner_square_width + suburb_spacing,
+                inner_semi_height * inner_square_height,
+            ),  # east
+            Point(inner_semi_width * inner_square_width, -suburb_spacing),  # south
+            Point(
+                inner_semi_width * inner_square_width,
+                2 * inner_semi_height * inner_square_height + suburb_spacing,
+            ),  # north
+        ]
+
+        rotations = [270, 90, 180, 0]
+        prefixes = ["west", "east", "south", "north"]
+
+        for r, a, p in zip(rotations, anchors, prefixes):
+            nodes_, edges_ = generate_regular_tree_data(
+                tree_depth=suburb_depth,
+                branching_factor=suburb_branching_factor,
+                leaf_spacing=suburb_leaf_spacing,
+                step_size=suburb_step_size,
+                root=a,
+                rotation=r,
+                prefix=p,
+            )
+            nodes.extend(nodes_)
+            edges.extend(edges_)
+
+        edges.append(
+            SpatialEdge(start=f"inner_{inner_semi_width}_{0}", end=f"south_{0}_{0}")
+        )
+
+        edges.append(
+            SpatialEdge(
+                start=f"inner_{inner_semi_width}_{2 * inner_semi_height}",
+                end=f"north_{0}_{0}",
+            )
+        )
+
+        edges.append(
+            SpatialEdge(start=f"inner_{0}_{inner_semi_height}", end=f"west_{0}_{0}")
+        )
+
+        edges.append(
+            SpatialEdge(
+                start=f"inner_{2 * inner_semi_width}_{inner_semi_height}",
+                end=f"east_{0}_{0}",
+            )
+        )
+
+        SpatialGraph.__init__(self, nodes=nodes, edges=edges)
+
+
 if __name__ == "__main__":
 
     # random_spatial_graph = RandomSpatialGraph(number_of_nodes=200)

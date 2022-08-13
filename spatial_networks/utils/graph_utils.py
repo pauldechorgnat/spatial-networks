@@ -1,6 +1,12 @@
 from networkx import Graph
 
 
+def merge(
+    left: Graph, right: Graph, left_prefix: str = "left", right_prefix: str = "right"
+):
+    pass
+
+
 def get_closed_triangles(graph: Graph, nodes: list = []):
     if len(nodes) == 0:
         nodes = graph.nodes
