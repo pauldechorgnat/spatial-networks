@@ -255,6 +255,9 @@ def generate_regular_tree_data(
 
     final_width = (branching_factor ** (tree_depth)) * leaf_spacing
 
+    cos = np.cos(rotation * 2 * np.pi / 360)
+    sin = np.sin(rotation * 2 * np.pi / 360)
+
     for d in range(1, tree_depth + 1):
 
         current_width = final_width - final_width / (branching_factor**d)
@@ -265,8 +268,6 @@ def generate_regular_tree_data(
             x_delta = -(current_width / 2) + (current_width * n / (number_of_nodes - 1))
             y_delta = d * step_size
 
-            cos = np.cos(rotation * 2 * np.pi / 360)
-            sin = np.sin(rotation * 2 * np.pi / 360)
             x = x_root + cos * x_delta + sin * y_delta
             y = y_root - sin * x_delta + cos * y_delta
 
