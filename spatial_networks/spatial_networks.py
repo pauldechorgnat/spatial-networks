@@ -24,6 +24,7 @@ from .utils import (
     generate_square_lattice_data,
     generate_triangle_lattice_data,
     generate_hexagonal_lattice_data,
+    generate_regular_tree_data,
     SpatialEdge,
     SpatialNode,
 )
@@ -184,13 +185,15 @@ class RandomSpatialGraph(SpatialGraph):
         edge_probability: float = 0.01,
         dimension: int = 2,
         position_distribution: callable = np.random.uniform,
+        prefix: str = "node",
     ):
         if dimension not in [2, 3]:
             raise ValueError(f"dimension should be 2 or 3 not '{dimention}'")
 
         nodes = [
             SpatialNode(
-                name=f"node_{i}", geometry=Point(position_distribution(size=dimension))
+                name=f"{prefix}_{i}",
+                geometry=Point(position_distribution(size=dimension)),
             )
             for i in range(number_of_nodes)
         ]
@@ -202,8 +205,8 @@ class RandomSpatialGraph(SpatialGraph):
                 if np.random.uniform() < edge_probability:
                     edges.append(
                         SpatialEdge(
-                            start=f"node_{i}",
-                            end=f"node_{j}",
+                            start=f"{prefix}_{i}",
+                            end=f"{prefix}_{j}",
                             geometry=LineString(
                                 [nodes[i]["geometry"], nodes[j]["geometry"]]
                             ),
@@ -222,10 +225,12 @@ class SoftRGG(SpatialGraph):
         position_distribution: callable = np.random.uniform,
         deterrence_function: callable = lambda x: x > 0.3,
         dimension: int = 2,
+        prefix: str = "node",
     ):
         nodes = [
             SpatialNode(
-                name=f"node_{i}", geometry=Point(position_distribution(size=dimension))
+                name=f"{prefix}_{i}",
+                geometry=Point(position_distribution(size=dimension)),
             )
             for i in range(number_of_nodes)
         ]
@@ -259,6 +264,7 @@ class RandomGeometricGraph(SoftRGG):
         radius: float = 0.1,
         position_distribution: callable = np.random.uniform,
         dimension: int = 2,
+        prefix: str = "node",
     ):
 
         SoftRGG.__init__(
@@ -273,10 +279,17 @@ class RandomGeometricGraph(SoftRGG):
 class StarSpatialGraph(SpatialGraph):
     """A simple class that creates a Start Geometric Graph"""
 
-    def __init__(self, number_of_branches: int = 6, nodes_per_branch: int = 10):
+    def __init__(
+        self,
+        number_of_branches: int = 6,
+        nodes_per_branch: int = 10,
+        prefix: str = "node",
+    ):
 
         _, nodes, edges = generate_star_spatial_network_data(
-            number_of_branches=number_of_branches, nodes_per_branch=nodes_per_branch
+            number_of_branches=number_of_branches,
+            nodes_per_branch=nodes_per_branch,
+            prefix=prefix,
         )
 
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
@@ -288,10 +301,13 @@ class StarAndRingNetwork(SpatialGraph):
         number_of_branches: int = 6,
         nodes_per_branch: int = 10,
         ring_depths: list = [5],
+        prefix: str = "node",
     ):
         # building the star network
         points, nodes, edges = generate_star_spatial_network_data(
-            number_of_branches=number_of_branches, nodes_per_branch=nodes_per_branch
+            number_of_branches=number_of_branches,
+            nodes_per_branch=nodes_per_branch,
+            prefix=prefix,
         )
         # Adding the rings
         for depth in ring_depths:
@@ -300,15 +316,15 @@ class StarAndRingNetwork(SpatialGraph):
                     f"Ring depth {depth} cannot be larger than Branch depth {nodes_per_branch}"
                 )
             for k in range(number_of_branches):
-                start_name = f"node_{depth}_{k}"
-                end_name = f"node_{depth}_{(k + 1) % number_of_branches}"
+                start_name = f"{prefix}_{depth}_{k}"
+                end_name = f"{prefix}_{depth}_{(k + 1) % number_of_branches}"
 
                 start_node = points[start_name]
                 end_node = points[end_name]
                 arc = create_circle_arc(
                     start=start_node,
                     end=end_node,
-                    center=points["node_0_0"],
+                    center=points[f"{prefix}_0_0"],
                     nb_points=depth * 3,  # could be changed...
                 )
                 edges.append(
@@ -330,12 +346,14 @@ class SquareLattice(SpatialGraph):
         squares_per_line: int = 5,
         square_height: float = 1.0,
         square_width: float = 1.0,
+        prefix: str = "node",
     ):
         nodes, edges = generate_square_lattice_data(
             nb_lines=nb_lines,
             squares_per_line=squares_per_line,
             square_height=square_height,
             square_width=square_width,
+            prefix=prefix,
         )
 
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
@@ -350,12 +368,14 @@ class TriangleLattice(SpatialGraph):
         nb_lines: int = 5,
         triangle_base: float = 1.0,
         triangle_height: float = 1.0,
+        prefix: str = "node",
     ):
         nodes, edges = generate_triangle_lattice_data(
             nb_lines=nb_lines,
             triangles_per_line=triangles_per_line,
             triangle_base=triangle_base,
             triangle_height=triangle_height,
+            prefix=prefix,
         )
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
 
@@ -364,12 +384,17 @@ class HexagonalLattice(SpatialGraph):
     """A regular hexagonal lattice"""
 
     def __init__(
-        self, hexagons_per_line: int = 3, nb_lines: int = 4, hexagon_base: int = 1.0
+        self,
+        hexagons_per_line: int = 3,
+        nb_lines: int = 4,
+        hexagon_base: int = 1.0,
+        prefix: str = "node",
     ):
         nodes, edges = generate_hexagonal_lattice_data(
             hexagons_per_line=hexagons_per_line,
             nb_lines=nb_lines,
             hexagon_base=hexagon_base,
+            prefix=prefix,
         )
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
 
@@ -382,7 +407,8 @@ class RegularTree(SpatialGraph):
         leaf_spacing: float = 1.0,
         step_size: float = 1.0,
         root: Point = Point(0, 0),
-        rotation=0,
+        rotation: float = 0,
+        prefix: str = "node",
     ):
         nodes, edges = generate_regular_tree_data(
             branching_factor=branching_factor,
@@ -391,6 +417,7 @@ class RegularTree(SpatialGraph):
             step_size=step_size,
             root=root,
             rotation=rotation,
+            prefix=prefix,
         )
 
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
