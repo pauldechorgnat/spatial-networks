@@ -10,3 +10,7 @@ notes.md
 docs
 .env
 !notebooks/0*.ipynb
+VERSION
+scripts/
+tests/
+setup.py

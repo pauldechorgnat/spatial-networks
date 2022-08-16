@@ -10,9 +10,9 @@ VERSION = environ.get("VERSION")
 DEBUG = True
 
 if not DEBUG:
-    pypi_url = "https://pypi.org/spatial-networks/json"
+    pypi_url = "https://pypi.org/pypi/spatial-networks/json"
 else:
-    pypi_url = "https://test.pypi.org/spatial-networks/json"
+    pypi_url = "https://test.pypi.org/pypi/spatial-networks/json"
 
 if not VERSION:
     response = requests.get(url=pypi_url)
