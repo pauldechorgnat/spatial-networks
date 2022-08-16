@@ -37,6 +37,9 @@ class SpatialNode(Mapping):
     def __setitem__(self, attr_name, attr_value):
         self.attributes[attr_name] = attr_value
 
+    def __str__(self):
+        return f"SpatialNode '{self.name}' with coordinates: {self.geometry}"
+
 
 class SpatialEdge(Mapping):
     def __init__(self, start: str, end: str, geometry: LineString = None, **attr):
@@ -59,6 +62,9 @@ class SpatialEdge(Mapping):
 
     def __setitem__(self, attr_name, attr_value):
         self.attributes[attr_name] = attr_value
+
+    def __str__(self):
+        return f"SpatialEdge from node '{self.start}' to node '{self.end}'"
 
 
 def check_node(node: dict):

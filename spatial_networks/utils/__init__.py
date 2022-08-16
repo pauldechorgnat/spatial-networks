@@ -19,3 +19,6 @@ from .geometry_utils import create_circle_arc
 # graph_utils
 from .graph_utils import get_open_triangles
 from .graph_utils import get_closed_triangles
+
+# plot utils
+from .plot_utils import plot_shapely_objects
