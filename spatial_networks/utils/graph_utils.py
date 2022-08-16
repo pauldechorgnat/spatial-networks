@@ -116,3 +116,21 @@ def make_planar(
     new_graph.add_edges_from(edges_to_add=edges)
 
     return new_graph
+
+
+def flatten_graph(graph: SpatialGraph):
+    """Function to make all edges into straight lines
+
+    Args:
+        graph (SpatialGraph): graph to flatten
+
+    Returns:
+        SpatialGraph: a SpatialGraph with straight lines as edges
+    """
+    nodes = [SpatialNode(**i[1]) for i in graph.nodes(data=True)]
+
+    edges = [SpatialEdge(start=start, end=end) for start, end in graph.edges()]
+
+    new_graph = SpatialGraph(nodes=nodes, edges=edges)
+
+    return new_graph
