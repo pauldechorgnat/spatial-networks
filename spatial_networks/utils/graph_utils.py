@@ -46,16 +46,20 @@ def get_open_triangles(graph: Graph, nodes: list = []):
     return triangles
 
 
-def make_planar(graph: Graph, keep_data: bool = True, prefix: str = "intersection"):
-    """Function that returns a new SpatialGraph
+def make_planar(
+    graph: SpatialGraph, keep_data: bool = True, prefix: str = "intersection"
+):
+    """Function that returns a new SpatialGraph made planar by splitting crossing edges
 
     Args:
-        graph (Graph): _description_
-        keep_data (bool, optional): _description_. Defaults to True.
-        prefix (str, optional): _description_. Defaults to "intersection".
+        graph (SpatialGraph): A SpatialGraph
+        keep_data (bool, optional): Boolean to keep node and edges data (edges that are splitted cannot keep the data).
+            Defaults to True.
+        prefix (str, optional): Prefix for the newly created nodes.
+            Defaults to "intersection".
 
     Returns:
-        _type_: _description_
+        SpatialGraph: a planarized version of graph
     """
     if keep_data:
         points = {
