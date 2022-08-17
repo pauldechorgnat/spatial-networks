@@ -16,6 +16,7 @@ from .generators import generate_regular_tree_data
 # geometry_utils
 from .geometry_utils import create_circle
 from .geometry_utils import create_circle_arc
+from .geometry_utils import consistent_intersection
 
 # graph_utils
 from .graph_utils import get_open_triangles
