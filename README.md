@@ -9,7 +9,7 @@ A small library based on NetworkX and Shapely to manipulate Spatial Networks.
 > - learning about Spatial Networks
 > - understanding how to create a Python package
 
-If you want to see how this works, or at least where this is going, you can find a first notebook in the [notebooks](notebooks/01_introduction.ipynb) folder.
+If you want to see how this works, or at least where this is going, you can find a first notebook in the [notebooks](notebooks/01_basic_data_structures.ipynb) folder.
 
 ## RoadMap
 

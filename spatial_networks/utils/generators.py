@@ -29,7 +29,7 @@ def generate_random_graph_data(
                 edges.append(
                     SpatialEdge(
                         start=nodes[i]["name"],
-                        end=nodes[j]["name"],
+                        stop=nodes[j]["name"],
                         geometry=LineString(
                             [nodes[i]["geometry"], nodes[j]["geometry"]]
                         ),
@@ -62,7 +62,7 @@ def generate_star_spatial_network_data(
         edges.append(
             SpatialEdge(
                 start=f"{prefix}_0_0",
-                end=f"{prefix}_1_{k}",
+                stop=f"{prefix}_1_{k}",
                 geometry=LineString(
                     [points[f"{prefix}_0_0"], points[f"{prefix}_1_{k}"]]
                 ),
@@ -73,12 +73,12 @@ def generate_star_spatial_network_data(
     for r in range(1, nodes_per_branch - 1):
         for k in range(number_of_branches):
             node_start = f"{prefix}_{r}_{k}"
-            node_end = f"{prefix}_{r + 1}_{k}"
+            node_stop = f"{prefix}_{r + 1}_{k}"
             edges.append(
                 SpatialEdge(
                     start=node_start,
-                    end=node_end,
-                    geometry=LineString([points[node_start], points[node_end]]),
+                    stop=node_stop,
+                    geometry=LineString([points[node_start], points[node_stop]]),
                 )
             )
     return points, nodes, edges
@@ -105,14 +105,14 @@ def generate_square_lattice_data(
     edges = [
         SpatialEdge(
             start=f"{prefix}_{w}_{h}",
-            end=f"{prefix}_{w}_{h + 1}",
+            stop=f"{prefix}_{w}_{h + 1}",
         )
         for h in range(lattice_height - 1)
         for w in range(lattice_width)
     ] + [
         SpatialEdge(
             start=f"{prefix}_{w}_{h}",
-            end=f"{prefix}_{w + 1}_{h}",
+            stop=f"{prefix}_{w + 1}_{h}",
         )
         for h in range(lattice_height)
         for w in range(lattice_width - 1)
@@ -145,7 +145,7 @@ def generate_triangle_lattice_data(
         [
             SpatialEdge(
                 start=f"{prefix}_{w}_{h}",
-                end=f"{prefix}_{w}_{h + 1}",
+                stop=f"{prefix}_{w}_{h + 1}",
             )
             for h in range(lattice_height - 1)
             for w in range(lattice_width)
@@ -153,7 +153,7 @@ def generate_triangle_lattice_data(
         + [
             SpatialEdge(
                 start=f"{prefix}_{w}_{h}",
-                end=f"{prefix}_{w + 1}_{h}",
+                stop=f"{prefix}_{w + 1}_{h}",
             )
             for h in range(lattice_height)
             for w in range(lattice_width - 1)
@@ -161,7 +161,7 @@ def generate_triangle_lattice_data(
         + [
             SpatialEdge(
                 start=f"{prefix}_{w}_{h}",
-                end=f"{prefix}_{w + 1}_{h + 1}",
+                stop=f"{prefix}_{w + 1}_{h + 1}",
             )
             for h in range(1, lattice_height - 1, 2)
             for w in range(lattice_width - 1)
@@ -169,7 +169,7 @@ def generate_triangle_lattice_data(
         + [
             SpatialEdge(
                 start=f"{prefix}_{w}_{h}",
-                end=f"{prefix}_{w - 1}_{h + 1}",
+                stop=f"{prefix}_{w - 1}_{h + 1}",
             )
             for h in range(0, lattice_height - 1, 2)
             for w in range(1, lattice_width)
@@ -220,20 +220,20 @@ def generate_hexagonal_lattice_data(
     for i in cols:
         for j in rows[: M + 1]:
             start_name = f"{prefix}_{i}_{j}"
-            end_name = f"{prefix}_{i}_{j + 1}"
-            if (start_name in nodes_dict) and (end_name in nodes_dict):
-                edges.append(SpatialEdge(start=start_name, end=end_name))
+            stop_name = f"{prefix}_{i}_{j + 1}"
+            if (start_name in nodes_dict) and (stop_name in nodes_dict):
+                edges.append(SpatialEdge(start=start_name, stop=stop_name))
 
     for i in cols[:n]:
         for j in rows:
             start_name = f"{prefix}_{i}_{j}"
-            end_name = f"{prefix}_{i + 1}_{j}"
+            stop_name = f"{prefix}_{i + 1}_{j}"
             if (
                 (start_name in nodes_dict)
-                and (end_name in nodes_dict)
+                and (stop_name in nodes_dict)
                 and (i % 2 == j % 2)
             ):
-                edges.append(SpatialEdge(start=start_name, end=end_name))
+                edges.append(SpatialEdge(start=start_name, stop=stop_name))
     nodes = nodes_dict.values()
 
     return nodes, edges
@@ -277,7 +277,7 @@ def generate_regular_tree_data(
                 edges.append(
                     SpatialEdge(
                         start=f"{prefix}_{d - 1}_{n // branching_factor}",
-                        end=f"{prefix}_{d}_{n}",
+                        stop=f"{prefix}_{d}_{n}",
                     )
                 )
 

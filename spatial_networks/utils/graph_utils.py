@@ -99,12 +99,12 @@ def make_planar(
 
         for new_edge in new_edges:
             coords = np.asarray(new_edge.coords)
-            [x_start, y_start], [x_end, y_end] = coords[0], coords[-1]
+            [x_start, y_start], [x_stop, y_stop] = coords[0], coords[-1]
 
             edges.append(
                 SpatialEdge(
                     start=points[(x_start, y_start)]["name"],
-                    end=points[(x_end, y_end)]["name"],
+                    stop=points[(x_stop, y_stop)]["name"],
                     geometry=new_edge,
                     old_index=edge[2],
                 )
@@ -113,9 +113,9 @@ def make_planar(
 
     if keep_data:
         for i, e in enumerate(edges):
-            if graph.has_edge(e.start, e.end):
+            if graph.has_edge(e.start, e.stop):
                 edges[i] = SpatialEdge(
-                    **graph.get_edge_data(e.start, e.end)[e.get("old_index", 0)]
+                    **graph.get_edge_data(e.start, e.stop)[e.get("old_index", 0)]
                 )
 
     new_graph.add_nodes_from(nodes_to_add=nodes)
@@ -135,7 +135,7 @@ def flatten_graph(graph: SpatialGraph):
     """
     nodes = [SpatialNode(**i[1]) for i in graph.nodes(data=True)]
 
-    edges = [SpatialEdge(start=start, end=end) for start, end in graph.edges()]
+    edges = [SpatialEdge(start=start, stop=stop) for start, stop in graph.edges()]
 
     new_graph = SpatialGraph(nodes=nodes, edges=edges)
 

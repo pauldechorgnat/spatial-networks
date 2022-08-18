@@ -12,6 +12,7 @@ And verification functions:
 """
 
 from collections.abc import Mapping
+from collections.abc import Hashable
 
 import numpy as np
 import networkx as nx
@@ -27,6 +28,19 @@ from networkx import MultiGraph
 
 class SpatialNode(Mapping):
     def __init__(self, name: str, geometry: Point, **attr):
+        if (not name) or (not isinstance(name, Hashable)):
+            raise TypeError(
+                "'name' should be a hashable object which is not None. "
+                f"Received a '{type(name)}' object"
+            )
+        if not isinstance(geometry, Point):
+            raise TypeError(
+                "'geometry' should be a shapely.geometry.Point object. "
+                f"Received a '{type(geometry)}' object."
+            )
+        if geometry.has_z:
+            raise ValueError("'geometry' should be a two-dimension object.")
+
         self.name = name
         self.geometry = geometry
         self.attributes = {**attr, **{"name": name, "geometry": geometry}}
@@ -51,11 +65,31 @@ class SpatialNode(Mapping):
 
 
 class SpatialEdge(Mapping):
-    def __init__(self, start: str, end: str, geometry: LineString = None, **attr):
+    def __init__(self, start: str, stop: str, geometry: LineString = None, **attr):
+        if (not start) or (not isinstance(start, Hashable)):
+            raise TypeError(
+                "'name' should be a hashable object which is not None. "
+                f"Received a '{type(start)}' object"
+            )
+        if (not stop) or (not isinstance(stop, Hashable)):
+            raise TypeError(
+                "'stop' should be a hashable object which is not None. "
+                f"Received a '{type(stop)}' object"
+            )
+        if (geometry) and (not isinstance(geometry, LineString)):
+            raise TypeError(
+                "'geometry' should be a shapely.geometry.LineString object or None. "
+                f"Received a '{type(geometry)}' object."
+            )
         self.start = start
-        self.end = end
+        self.stop = stop
         self.geometry = geometry
-        self.attributes = {**attr, **{"start": start, "end": end, "geometry": geometry}}
+        self.attributes = {
+            **attr,
+            **{"start": start, "stop": stop, "geometry": geometry},
+        }
+        if "key" in self.attributes:
+            raise ValueError("'key' cannot be an attribute of a SpatialEdge")
 
     def __getitem__(self, attr_name):
         return self.attributes[attr_name]
@@ -73,41 +107,41 @@ class SpatialEdge(Mapping):
         self.attributes[attr_name] = attr_value
 
     def __str__(self):
-        return f"SpatialEdge from node '{self.start}' to node '{self.end}'"
+        return f"SpatialEdge from node '{self.start}' to node '{self.stop}'"
 
 
-def check_node(node: dict):
-    if ("name" not in node) or ("geometry" not in node):
-        raise ValueError("Nodes should be dictionaries with 'name' and 'geometry' keys")
-    if not isinstance(node["geometry"], Point):
-        raise TypeError(
-            "'geometry' key of nodes should be an instance of class shapely.geometry.Point"
-        )
-    return node
+# def check_node(node: dict):
+#     if ("name" not in node) or ("geometry" not in node):
+#         raise ValueError("Nodes should be dictionaries with 'name' and 'geometry' keys")
+#     if not isinstance(node["geometry"], Point):
+#         raise TypeError(
+#             "'geometry' key of nodes should be an instance of class shapely.geometry.Point"
+#         )
+#     return node
 
 
-def check_edge(edge: dict, nodes_dict: dict):
-    if ("start" not in edge) or ("end" not in edge):
-        raise ValueError("Edges should be dictionaries with 'start' and 'end' keys")
-    if ("geometry" not in edge) or (not edge["geometry"]):
-        try:
-            start_node = nodes_dict[edge["start"]]
-            end_node = nodes_dict[edge["end"]]
+# def check_edge(edge: dict, nodes_dict: dict):
+#     if ("start" not in edge) or ("stop" not in edge):
+#         raise ValueError("Edges should be dictionaries with 'start' and 'stop' keys")
+#     if ("geometry" not in edge) or (not edge["geometry"]):
+#         try:
+#             start_node = nodes_dict[edge["start"]]
+#             stop_node = nodes_dict[edge["stop"]]
 
-            edge["geometry"] = LineString(
-                [start_node["geometry"], end_node["geometry"]]
-            )
-        except KeyError as error:
-            raise KeyError(f"Node '{error}' is not in the nodes")
-    else:
-        if not isinstance(edge["geometry"], LineString):
-            raise TypeError(
-                "'geometry' key of edges should be an instance of class shapely.geometry.LineString"
-            )
-    if "length" not in edge:
-        edge["length"] = edge["geometry"].length
+#             edge["geometry"] = LineString(
+#                 [start_node["geometry"], stop_node["geometry"]]
+#             )
+#         except KeyError as error:
+#             raise KeyError(f"Node '{error}' is not in the nodes")
+#     else:
+#         if not isinstance(edge["geometry"], LineString):
+#             raise TypeError(
+#                 "'geometry' key of edges should be an instance of class shapely.geometry.LineString"
+#             )
+#     if "length" not in edge:
+#         edge["length"] = edge["geometry"].length
 
-    return edge
+#     return edge
 
 
 class SpatialGraph(MultiGraph):
@@ -123,7 +157,7 @@ class SpatialGraph(MultiGraph):
             Defaults to [].
             edges (list, optional): list of edges of the Spatial MultiGraph.
             Edges should be of the SpatialEdge class or dictionaries with
-            "start" (str), "end" (str) and "geometry" (shapely.geometry.LineString)
+            "start" (str), "stop" (str) and "geometry" (shapely.geometry.LineString)
             Defaults to [].
 
         Raises:
@@ -131,7 +165,7 @@ class SpatialGraph(MultiGraph):
                 of nodes are not of the same dimension
             ValueError: A ValueError can be raised if "geometry" or "name"
                 are not attributes of a Node
-            ValueError: A ValueError can be raised if "start", "end" or "geometry"
+            ValueError: A ValueError can be raised if "start", "stop" or "geometry"
                 are not attributes of an Edge
             TypeError: A TypeError can be raised if the "geometry" attribute of a Node
                 is not of the shapely.geometry.Point class
@@ -141,17 +175,8 @@ class SpatialGraph(MultiGraph):
         """
         MultiGraph.__init__(self=self)
 
-        dimensions = []
         for n in nodes:
             self.add_node(n)
-            dimensions.append(n["geometry"].has_z)
-
-        if sum(dimensions) == 1:
-            self.dimension = 3
-        elif sum(dimensions) == 0:
-            self.dimension = 2
-        else:
-            raise ValueError("Nodes are not all of the same dimension")
 
         for e in edges:
             self.add_edge(e)
@@ -160,18 +185,52 @@ class SpatialGraph(MultiGraph):
         return {n[0]: n[1] for n in self.nodes(data=True)}
 
     def edge_properties_dict(self):
-        edge_dict_factory = {}
+        edge_dict = {}
         for e in self.edges(data=True, keys=True):
-            edge_dict_factory.get((e[0], e[1]), []).append(e[3])
-        return edge_dict_factory
+            edge_dict.get((e[0], e[1]), []).append(e[3])
+        return edge_dict
 
-    def add_node(self, node_to_add):
-        node = check_node(node=node_to_add)
-        MultiGraph.add_node(self, node_for_adding=node["name"], **node)
+    def add_node(self, node_for_adding):
+        if not isinstance(node_for_adding, SpatialNode):
+            raise TypeError(
+                "'node_for_adding' should be a SpatialNode. "
+                f"Received {type(node_for_adding)} instead."
+            )
+        MultiGraph.add_node(
+            self, node_for_adding=node_for_adding["name"], **node_for_adding
+        )
 
     def add_edge(self, edge_to_add):
-        edge = check_edge(edge=edge_to_add, nodes_dict=self.node_properties_dict())
-        MultiGraph.add_edge(self, edge["start"], edge["end"], key=None, **edge)
+        if not isinstance(edge_to_add, SpatialEdge):
+            raise TypeError(
+                "'edge_for_adding' should be a SpatialNode. "
+                f"Received {type(edge_for_adding)} instead."
+            )
+        elif edge_to_add["start"] not in self.nodes:
+            raise ValueError(
+                f"`edge_to_add['start']` '{edge_to_add['start']}' is not a node of this graph."
+            )
+        elif edge_to_add["stop"] not in self.nodes:
+            raise ValueError(
+                f"`edge_to_add['stop']` '{edge_to_add['stop']}' is not a node of this graph."
+            )
+        elif edge_to_add["geometry"] is None:
+            edge_to_add["geometry"] = LineString(
+                [
+                    self.nodes[edge_to_add["start"]]["geometry"],
+                    self.nodes[edge_to_add["stop"]]["geometry"],
+                ]
+            )
+        elif not isinstance(edge_to_add["geometry"], LineString):
+            raise TypeError(
+                "`edge_to_add['geometry']` should be a shapely.geometry.LineString or None. "
+                f"Received `{type(edge_to_add['geometry'])}`."
+            )
+        if "length" not in edge_to_add:
+            edge_to_add["length"] = edge_to_add["geometry"].length
+        MultiGraph.add_edge(
+            self, edge_to_add["start"], edge_to_add["stop"], key=None, **edge_to_add
+        )
 
     def draw_nodes(
         self, node_color="#EDC339", node_size=100, include_names=False, ax=None
@@ -180,9 +239,9 @@ class SpatialGraph(MultiGraph):
             fig, ax = plt.subplots(1, 1)
         xs, ys = [], []
 
-        node_properties = self.node_properties_dict()
-        for n in node_properties:
+        node_properties = {n[0]: n[1] for n in self.nodes(data=True)}
 
+        for n in node_properties:
             xs.append(node_properties[n]["geometry"].x)
             ys.append(node_properties[n]["geometry"].y)
 
@@ -240,12 +299,22 @@ class SpatialGraph(MultiGraph):
             self.add_node(n)
 
     def remove_edge(self, edge_to_remove, key=None):
-        e = (edge_to_remove["start"], edge_to_remove["end"])
-        MultiGraph.remove_edge(self, e[0], e[1], key=key)
+        if isinstance(edge_to_remove, SpatialEdge):
+            u, v = edge_to_remove["start"], edge_to_remove["stop"]
+            MultiGraph.remove_edge(self, u=u, v=v, key=key)
+        else:
+            u, v = edge_to_remove
+            MultiGraph.remove_edge(self, u=u, v=v)
 
-    def remove_node(self, node_to_remove):
-        n = node_to_remove["name"]
-        MultiGraph.remove_node(self, n)
+    def remove_node(self, n):
+        if isinstance(n, SpatialNode):
+            MultiGraph.remove_node(self, n=n["name"])
+        elif isinstance(n, Hashable):
+            MultiGraph.remove_node(self, n=n)
+        else:
+            raise TypeError(
+                f"'n' should be a 'SpatialNode' or a hashable object, not {type(n)}"
+            )
 
     def remove_edges_from(self, edges_to_remove):
         for e in edges_to_remove:

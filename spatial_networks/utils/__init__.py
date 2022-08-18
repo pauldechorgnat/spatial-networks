@@ -2,8 +2,6 @@
 from .core_utils import SpatialNode
 from .core_utils import SpatialEdge
 from .core_utils import SpatialGraph
-from .core_utils import check_node
-from .core_utils import check_edge
 
 # generators
 from .generators import generate_random_graph_data

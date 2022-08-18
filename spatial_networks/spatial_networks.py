@@ -19,8 +19,6 @@ from networkx.drawing import draw_networkx_edges
 # from utils import generate_star_spatial_network_data
 # from utils import SpatialEdge, SpatialNode
 from .utils import (
-    check_edge,
-    check_node,
     create_circle_arc,
     generate_star_spatial_network_data,
     generate_square_lattice_data,
@@ -67,7 +65,7 @@ class RandomSpatialGraph(SpatialGraph):
                     edges.append(
                         SpatialEdge(
                             start=f"{prefix}_{i}",
-                            end=f"{prefix}_{j}",
+                            stop=f"{prefix}_{j}",
                             geometry=LineString(
                                 [nodes[i]["geometry"], nodes[j]["geometry"]]
                             ),
@@ -106,7 +104,7 @@ class SoftRGG(SpatialGraph):
                     edges.append(
                         SpatialEdge(
                             start=node_i["name"],
-                            end=node_j["name"],
+                            stop=node_j["name"],
                             geometry=LineString(
                                 [node_i["geometry"], node_j["geometry"]]
                             ),
@@ -178,20 +176,20 @@ class StarAndRingNetwork(SpatialGraph):
                 )
             for k in range(number_of_branches):
                 start_name = f"{prefix}_{depth}_{k}"
-                end_name = f"{prefix}_{depth}_{(k + 1) % number_of_branches}"
+                stop_name = f"{prefix}_{depth}_{(k + 1) % number_of_branches}"
 
                 start_node = points[start_name]
-                end_node = points[end_name]
+                stop_node = points[stop_name]
                 arc = create_circle_arc(
                     start=start_node,
-                    end=end_node,
+                    stop=stop_node,
                     center=points[f"{prefix}_0_0"],
                     nb_points=depth * 3,  # could be changed...
                 )
                 edges.append(
                     SpatialEdge(
                         start=start_name,
-                        end=end_name,
+                        stop=stop_name,
                         geometry=arc,
                     )
                 )
@@ -337,24 +335,24 @@ class GridTree(SpatialGraph):
             edges.extend(edges_)
 
         edges.append(
-            SpatialEdge(start=f"inner_{inner_semi_width}_{0}", end=f"south_{0}_{0}")
+            SpatialEdge(start=f"inner_{inner_semi_width}_{0}", stop=f"south_{0}_{0}")
         )
 
         edges.append(
             SpatialEdge(
                 start=f"inner_{inner_semi_width}_{2 * inner_semi_height}",
-                end=f"north_{0}_{0}",
+                stop=f"north_{0}_{0}",
             )
         )
 
         edges.append(
-            SpatialEdge(start=f"inner_{0}_{inner_semi_height}", end=f"west_{0}_{0}")
+            SpatialEdge(start=f"inner_{0}_{inner_semi_height}", stop=f"west_{0}_{0}")
         )
 
         edges.append(
             SpatialEdge(
                 start=f"inner_{2 * inner_semi_width}_{inner_semi_height}",
-                end=f"east_{0}_{0}",
+                stop=f"east_{0}_{0}",
             )
         )
 

@@ -24,22 +24,22 @@ def create_circle(center: Point = Point(0, 0), radius: float = 5, nb_points: int
 
 def create_circle_arc(
     start: Point = Point(0, 5),
-    end: Point = Point(5, 0),
+    stop: Point = Point(5, 0),
     center: Point = Point(0, 0),
     nb_points: int = 2,
 ):
     center_x, center_y = np.asarray(center.coords)[0]
     start_x, start_y = np.asarray(start.coords)[0]
-    end_x, end_y = np.asarray(end.coords)[0]
+    stop_x, stop_y = np.asarray(stop.coords)[0]
 
     arg_start = np.arctan2(start_y - center_y, start_x - center_x)
-    arg_end = np.arctan2(end_y - center_y, end_x - center_x)
+    arg_stop = np.arctan2(stop_y - center_y, stop_x - center_x)
 
-    arg_arc = arg_end - arg_start
+    arg_arc = arg_stop - arg_start
     if arg_arc < 0:
         arg_arc = 2 * np.pi + arg_arc
 
-    radius = np.mean([start.distance(center), end.distance(center)])
+    radius = np.mean([start.distance(center), stop.distance(center)])
 
     points = (
         [start]
@@ -50,7 +50,7 @@ def create_circle_arc(
             )
             for i in range(1, nb_points + 1)
         ]
-        + [end]
+        + [stop]
     )
 
     return LineString(points)
