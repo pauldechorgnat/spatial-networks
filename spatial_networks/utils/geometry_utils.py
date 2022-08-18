@@ -3,6 +3,7 @@ import numpy as np
 from shapely.geometry import Point
 from shapely.geometry import LineString
 from shapely.geometry import MultiPoint
+from shapely.geometry import GeometryCollection
 
 
 def create_circle(center: Point = Point(0, 0), radius: float = 5, nb_points: int = 10):
@@ -60,11 +61,16 @@ def consistent_intersection(geom, splitter):
     intersections = geom.intersection(splitter)
 
     if isinstance(intersections, LineString):
+
         return MultiPoint()
     elif isinstance(intersections, Point):
         return MultiPoint([intersections])
     elif isinstance(intersections, MultiPoint):
         return intersections
+    elif isinstance(intersections, GeometryCollection):
+        if len(intersections.geoms) == 0:
+            return MultiPoint()
+
     else:
         raise TypeError(
             f"intersections returned an object of type {type(intersections)}"

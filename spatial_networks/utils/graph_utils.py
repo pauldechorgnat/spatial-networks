@@ -1,5 +1,6 @@
 from itertools import combinations
 
+import numpy as np
 import networkx as nx
 
 from networkx import Graph
@@ -10,6 +11,8 @@ from shapely.geometry import LineString
 from .core_utils import SpatialEdge
 from .core_utils import SpatialNode
 from .core_utils import SpatialGraph
+
+from .geometry_utils import consistent_intersection
 
 
 def merge(
@@ -70,7 +73,7 @@ def make_planar(
         }
     else:
         points = {
-            (n[1]["geometry"].x, n[1]["geometry"].y): f"node_{i}"
+            (n[1]["geometry"].x, n[1]["geometry"].y): {"name": f"node_{i}"}
             for i, n in enumerate(graph.nodes(data=True))
         }
     edges = []
@@ -79,38 +82,41 @@ def make_planar(
 
     new_graph = SpatialGraph()
 
-    for edge in my_graph.edges(data=True):
-        segments = my_graph.get_segments(exclude=[(edge[0], edge[1])])
-        intersections = edge[2]["geometry"].intersection(segments)
-        if isinstance(intersections, LineString):
-            edges.append(
-                SpatialEdge(start=edge[0], end=edge[1], geometry=edge[2]["geometry"])
-            )
+    for edge in graph.edges(data=True, keys=True):
+        segments = graph.get_segments(exclude=[(edge[0], edge[1], edge[2])])
+        old_edge = False
+
+        intersections = consistent_intersection(edge[3]["geometry"], segments)
+        for i in intersections.geoms:
+            x, y = np.asarray(i.coords)[0]
+            if (x, y) not in points:
+                points[(x, y)] = {"name": f"{prefix}_{counter}"}
+                counter += 1
+        if segments.type == "GeometryCollection":
+            new_edges = [edge[3]["geometry"]]
         else:
-            for i in intersections.geoms:
-                x, y = np.asarray(i.coords)[0]
-                if (x, y) not in points:
-                    points[(x, y)] = {"name": f"{prefix}_{counter}"}
-                    counter += 1
-            new_edges = shapely_split(geom=edge[2]["geometry"], splitter=segments)
+            new_edges = shapely_split(geom=edge[3]["geometry"], splitter=segments).geoms
 
-            for new_edge in new_edges.geoms:
-                coords = np.asarray(new_edge.coords)
-                [x_start, y_start], [x_end, y_end] = coords[0], coords[-1]
-                edges.append(
-                    SpatialEdge(
-                        start=points[(x_start, y_start)]["name"],
-                        end=points[(x_end, y_end)]["name"],
-                        geometry=new_edge,
-                    )
+        for new_edge in new_edges:
+            coords = np.asarray(new_edge.coords)
+            [x_start, y_start], [x_end, y_end] = coords[0], coords[-1]
+
+            edges.append(
+                SpatialEdge(
+                    start=points[(x_start, y_start)]["name"],
+                    end=points[(x_end, y_end)]["name"],
+                    geometry=new_edge,
+                    old_index=edge[2],
                 )
-
+            )
     nodes = [SpatialNode(geometry=Point(k), **v) for k, v in points.items()]
 
     if keep_data:
         for i, e in enumerate(edges):
             if graph.has_edge(e.start, e.end):
-                edges[i] = SpatialEdge(**graph.get_edge_data(e.start, e.end))
+                edges[i] = SpatialEdge(
+                    **graph.get_edge_data(e.start, e.end)[e.get("old_index", 0)]
+                )
 
     new_graph.add_nodes_from(nodes_to_add=nodes)
     new_graph.add_edges_from(edges_to_add=edges)

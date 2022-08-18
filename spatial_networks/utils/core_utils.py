@@ -13,8 +13,16 @@ And verification functions:
 
 from collections.abc import Mapping
 
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+
 from shapely.geometry import Point
 from shapely.geometry import LineString
+from shapely.geometry import MultiLineString
+from shapely.geometry import MultiPoint
+from networkx import Graph
+from networkx import MultiGraph
 
 
 class SpatialNode(Mapping):
@@ -102,18 +110,18 @@ def check_edge(edge: dict, nodes_dict: dict):
     return edge
 
 
-class SpatialGraph(Graph):
+class SpatialGraph(MultiGraph):
     """Class that represents a Spatial Graphs"""
 
     def __init__(self, nodes: list = [], edges: list = []):
         """SpatialGraph constructor
 
         Args:
-            nodes (list, optional): list of nodes of the Spatial Graph.
+            nodes (list, optional): list of nodes of the Spatial MultiGraph.
             Nodes should be of the SpatialNode class or dictionaries with
             "name" (str) and "geometry"(shapely.geometry.Point) keys
             Defaults to [].
-            edges (list, optional): list of edges of the Spatial Graph.
+            edges (list, optional): list of edges of the Spatial MultiGraph.
             Edges should be of the SpatialEdge class or dictionaries with
             "start" (str), "end" (str) and "geometry" (shapely.geometry.LineString)
             Defaults to [].
@@ -131,9 +139,7 @@ class SpatialGraph(Graph):
                 is not of the shapely.geometry.LineString class
 
         """
-        Graph.__init__(self=self)
-        self.node_properties = {}
-        self.edge_properties = {}
+        MultiGraph.__init__(self=self)
 
         dimensions = []
         for n in nodes:
@@ -147,22 +153,25 @@ class SpatialGraph(Graph):
         else:
             raise ValueError("Nodes are not all of the same dimension")
 
-        self.node_properties = {n["name"]: n for n in nodes}
-        self.edge_properties = {}
-
         for e in edges:
             self.add_edge(e)
-            self.edge_properties[(e["start"], e["end"])] = e
+
+    def node_properties_dict(self):
+        return {n[0]: n[1] for n in self.nodes(data=True)}
+
+    def edge_properties_dict(self):
+        edge_dict_factory = {}
+        for e in self.edges(data=True, keys=True):
+            edge_dict_factory.get((e[0], e[1]), []).append(e[3])
+        return edge_dict_factory
 
     def add_node(self, node_to_add):
         node = check_node(node=node_to_add)
-        Graph.add_node(self, node_for_adding=node["name"], **node)
-        self.node_properties[node["name"]] = {**node}
+        MultiGraph.add_node(self, node_for_adding=node["name"], **node)
 
     def add_edge(self, edge_to_add):
-        edge = check_edge(edge=edge_to_add, nodes_dict=self.node_properties)
-        Graph.add_edge(self, u_of_edge=edge["start"], v_of_edge=edge["end"], **edge)
-        self.edge_properties[(edge["start"], edge["end"])] = {**edge}
+        edge = check_edge(edge=edge_to_add, nodes_dict=self.node_properties_dict())
+        MultiGraph.add_edge(self, edge["start"], edge["end"], key=None, **edge)
 
     def draw_nodes(
         self, node_color="#EDC339", node_size=100, include_names=False, ax=None
@@ -170,16 +179,24 @@ class SpatialGraph(Graph):
         if not ax:
             fig, ax = plt.subplots(1, 1)
         xs, ys = [], []
-        for n in self.node_properties:
-            xs.append(self.node_properties[n]["geometry"].x)
-            ys.append(self.node_properties[n]["geometry"].y)
+
+        node_properties = self.node_properties_dict()
+        for n in node_properties:
+
+            xs.append(node_properties[n]["geometry"].x)
+            ys.append(node_properties[n]["geometry"].y)
 
         ax.scatter(xs, ys, color=node_color, s=node_size)
 
         if include_names:
-            for n in self.node_properties:
-                node = self.node_properties[n]
-                ax.annotate(text=node["name"], xy=node["geometry"].coords[0])
+            for n in node_properties:
+                node = node_properties[n]
+                ax.annotate(
+                    text=node["name"],
+                    xy=node["geometry"].coords[0],
+                    ha="center",
+                    va="center",
+                )
         return ax
 
     def get_points(self):
@@ -189,25 +206,29 @@ class SpatialGraph(Graph):
         if include:
             edges = self.edges(nbunch=include, data=True)
         else:
-            edges = self.edges(data=True)
+            edges = self.edges(data=True, keys=True)
         if exclude:
-            edges = [e for e in edges if (e[0], e[1]) not in exclude]
-        return MultiLineString([e[2]["geometry"] for e in edges])
+            edges = [e for e in edges if (e[0], e[1], e[2]) not in exclude]
+
+        result = MultiLineString([e[3]["geometry"] for e in edges])
+        return result
 
     def draw_edges(self, edge_color="#01577D", ax=None):
         if not ax:
             fig, ax = plt.subplots(1, 1)
-        for e in self.edges:
-            coordinates = np.asarray(self.edges[e]["geometry"].coords)
+        for e in self.edges(data=True, keys=True):
+            coordinates = np.asarray(e[3]["geometry"].coords)
             ax.plot(coordinates[:, 0], coordinates[:, 1], color=edge_color, zorder=-1)
         return ax
 
-    def draw(self, include_names=False, ax=None):
+    def draw(self, include_names=False, ax=None, include_axis=False):
 
         if not ax:
             fig, ax = plt.subplots(1, 1)
         self.draw_edges(ax=ax)
         self.draw_nodes(ax=ax, include_names=include_names)
+        if not include_axis:
+            ax.axis("off")
         return ax
 
     def add_edges_from(self, edges_to_add):
@@ -218,15 +239,13 @@ class SpatialGraph(Graph):
         for n in nodes_to_add:
             self.add_node(n)
 
-    def remove_edge(self, edge_to_remove):
+    def remove_edge(self, edge_to_remove, key=None):
         e = (edge_to_remove["start"], edge_to_remove["end"])
-        self.edge_properties.pop(e)
-        Graph.remove_edge(self, e[0], e[1])
+        MultiGraph.remove_edge(self, e[0], e[1], key=key)
 
     def remove_node(self, node_to_remove):
         n = node_to_remove["name"]
-        Graph.remove_node(self, n)
-        self.node_properties.pop(n)
+        MultiGraph.remove_node(self, n)
 
     def remove_edges_from(self, edges_to_remove):
         for e in edges_to_remove:
@@ -245,8 +264,9 @@ class SpatialGraph(Graph):
             return np.NaN
 
     def metric_distance(self, node_i_name: str, node_j_name: str):
-        node_i = self.node_properties[node_i_name]
-        node_j = self.node_properties[node_j_name]
+        node_properties = self.node_properties_dict()
+        node_i = node_properties[node_i_name]
+        node_j = node_properties[node_j_name]
 
         return node_i["geometry"].distance(node_j["geometry"])
 
