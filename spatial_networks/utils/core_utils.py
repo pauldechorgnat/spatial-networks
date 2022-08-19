@@ -270,7 +270,7 @@ class SpatialGraph(MultiGraph):
         node_color: str = "#EDC339",
         node_size: int = 100,
         include_names: bool = False,
-        ax: matplotlib.axes._subplots.AxesSubplot = None,
+        ax=None,
         figsize: tuple = (5, 5),
     ):
         """Returns a figure with the nodes of the SpatialGraph
@@ -282,13 +282,13 @@ class SpatialGraph(MultiGraph):
                 Defaults to 100.
             include_names (bool, optional): if True, annotates the names of the nodes.
                 Defaults to False.
-            ax (matplotlib.axes._subplots.AxesSubplot, optional): a matplotlib ax.
+            ax: Matplotlib Axes object.
                 Defaults to None.
             figsize (tuple, optional): size of the figure if ax is None.
                 Defaults to (5, 5).
 
         Returns:
-            matplotlib.axes._subplots.AxesSubplot: a matplotlib ax
+            Matplotlib Axes object.
         """
         if not ax:
             fig, ax = plt.subplots(1, 1, figsize=figsize)
@@ -316,7 +316,7 @@ class SpatialGraph(MultiGraph):
     def draw_edges(
         self,
         edge_color: str = "#01577D",
-        ax: matplotlib.axes._subplots.AxesSubplot = None,
+        ax=None,
         figsize: tuple = (5, 5),
     ):
         """Returns a figure with the edges of the SpatialGraph
@@ -324,13 +324,13 @@ class SpatialGraph(MultiGraph):
         Args:
             edge_color (str, optional): color used to represent the edges.
                 Defaults to "#01577D".
-            ax (matplotlib.axes._subplots.AxesSubplot, optional): a matplotlib ax.
+            ax: Matplotlib Axes object.
                 Defaults to None.
             figsize (tuple, optional): size of the figure if ax is None.
                 Defaults to (5, 5).
 
         Returns:
-            matplotlib.axes._subplots.AxesSubplot: a matplotlib ax
+            Matplotlib Axes object.
         """
         if not ax:
             fig, ax = plt.subplots(1, 1, figsize=figsize)
@@ -343,7 +343,7 @@ class SpatialGraph(MultiGraph):
         self,
         include_names: bool = False,
         include_axis: bool = False,
-        ax: matplotlib.axes._subplots.AxesSubplot = None,
+        ax=None,
         figsize: tuple = (5, 5),
     ):
         """Returns a figure with the complete SpatialGraph
@@ -353,13 +353,13 @@ class SpatialGraph(MultiGraph):
                 Defaults to False.
             include_axis (bool, optional): if True, draws the axis.
                 Defaults to False.
-            ax (matplotlib.axes._subplots.AxesSubplot, optional): a matplotlib ax.
+            ax: Matplotlib Axes object.
                 Defaults to None.
             figsize (tuple, optional): size of the figure if ax is None.
                 Defaults to (5, 5).
 
         Returns:
-            matplotlib.axes._subplots.AxesSubplot: a matplotlib ax
+            Matplotlib Axes object.
         """
 
         if not ax:
