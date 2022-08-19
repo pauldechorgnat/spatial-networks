@@ -110,40 +110,6 @@ class SpatialEdge(Mapping):
         return f"SpatialEdge from node '{self.start}' to node '{self.stop}'"
 
 
-# def check_node(node: dict):
-#     if ("name" not in node) or ("geometry" not in node):
-#         raise ValueError("Nodes should be dictionaries with 'name' and 'geometry' keys")
-#     if not isinstance(node["geometry"], Point):
-#         raise TypeError(
-#             "'geometry' key of nodes should be an instance of class shapely.geometry.Point"
-#         )
-#     return node
-
-
-# def check_edge(edge: dict, nodes_dict: dict):
-#     if ("start" not in edge) or ("stop" not in edge):
-#         raise ValueError("Edges should be dictionaries with 'start' and 'stop' keys")
-#     if ("geometry" not in edge) or (not edge["geometry"]):
-#         try:
-#             start_node = nodes_dict[edge["start"]]
-#             stop_node = nodes_dict[edge["stop"]]
-
-#             edge["geometry"] = LineString(
-#                 [start_node["geometry"], stop_node["geometry"]]
-#             )
-#         except KeyError as error:
-#             raise KeyError(f"Node '{error}' is not in the nodes")
-#     else:
-#         if not isinstance(edge["geometry"], LineString):
-#             raise TypeError(
-#                 "'geometry' key of edges should be an instance of class shapely.geometry.LineString"
-#             )
-#     if "length" not in edge:
-#         edge["length"] = edge["geometry"].length
-
-#     return edge
-
-
 class SpatialGraph(MultiGraph):
     """Class that represents a Spatial Graphs"""
 
