@@ -3,7 +3,7 @@ from itertools import combinations
 import numpy as np
 import networkx as nx
 
-from networkx import Graph
+from networkx import SpatialGraph
 from shapely.ops import split as shapely_split
 from shapely.geometry import Point
 from shapely.geometry import LineString
@@ -16,12 +16,26 @@ from .geometry_utils import consistent_intersection
 
 
 def merge(
-    left: Graph, right: Graph, left_prefix: str = "left", right_prefix: str = "right"
+    left: SpatialGraph,
+    right: SpatialGraph,
+    left_prefix: str = "left",
+    right_prefix: str = "right",
 ):
     pass
 
 
-def get_closed_triangles(graph: Graph, nodes: list = []):
+def get_closed_triangles(graph: SpatialGraph, nodes: list = []):
+    """returns a list of closed triangles in a graph
+
+    Args:
+        graph (SpatialGraph): graph
+        nodes (list, optional): list of nodes to consider.
+            Defaults to [].
+
+    Returns:
+        dict: dictionary whose values are lists of triangles
+        referenced by node names.
+    """
     if len(nodes) == 0:
         nodes = graph.nodes
     triangles = {}
@@ -35,7 +49,18 @@ def get_closed_triangles(graph: Graph, nodes: list = []):
     return triangles
 
 
-def get_open_triangles(graph: Graph, nodes: list = []):
+def get_open_triangles(graph: SpatialGraph, nodes: list = []):
+    """returns a list of closed triangles in a graph
+
+    Args:
+        graph (SpatialGraph): graph
+        nodes (list, optional): list of nodes to consider.
+            Defaults to [].
+
+    Returns:
+        dict: dictionary whose values are lists of triangles
+        referenced by node names.
+    """
     if len(nodes) == 0:
         nodes = graph.nodes
     triangles = {}
@@ -125,13 +150,13 @@ def make_planar(
 
 
 def flatten_graph(graph: SpatialGraph):
-    """Function to make all edges into straight lines
+    """Returns a copy of a SpatialGraph with all edges as straight lines.
 
     Args:
-        graph (SpatialGraph): graph to flatten
+        graph (SpatialGraph): graph to flatten.
 
     Returns:
-        SpatialGraph: a SpatialGraph with straight lines as edges
+        SpatialGraph: a SpatialGraph with straight lines as edges.
     """
     nodes = [SpatialNode(**i[1]) for i in graph.nodes(data=True)]
 
