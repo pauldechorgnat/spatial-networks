@@ -3,7 +3,6 @@ from itertools import combinations
 import numpy as np
 import networkx as nx
 
-from networkx import SpatialGraph
 from shapely.ops import split as shapely_split
 from shapely.geometry import Point
 from shapely.geometry import LineString
