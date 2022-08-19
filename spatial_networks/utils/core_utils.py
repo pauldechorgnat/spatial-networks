@@ -246,7 +246,7 @@ class SpatialGraph(MultiGraph):
         if not isinstance(edge_to_add, SpatialEdge):
             raise TypeError(
                 "'edge_for_adding' should be a SpatialNode. "
-                f"Received {type(edge_for_adding)} instead."
+                f"Received {type(edge_to_add)} instead."
             )
         elif edge_to_add["start"] not in self.nodes:
             raise ValueError(

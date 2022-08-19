@@ -14,13 +14,61 @@ from .core_utils import SpatialGraph
 from .geometry_utils import consistent_intersection
 
 
-def merge(
+def merge_graphs(
     left: SpatialGraph,
     right: SpatialGraph,
     left_prefix: str = "left",
     right_prefix: str = "right",
+    links: list = [],
 ):
-    pass
+    """Returns a SpatialGraph from the merger of two SpatialGraph.
+
+    Args:
+        left (SpatialGraph): a SpatialGraph
+        right (SpatialGraph): a SpatialGraph
+        left_prefix (str, optional): a prefix to rename nodes from the left graph.
+            Defaults to "left".
+        right_prefix (str, optional): a prefix to rename nodes from the right graph.
+            Defaults to "right".
+        links (list, optional): a list of SpatialEdge to link both graphs.
+            Defaults to [].
+
+    Returns:
+        SpatialGraph: a merged SpatialGraph
+    """
+    nodes = [
+        SpatialNode(**{**n[1], "name": f"{left_prefix}_{n[1]['name']}"})
+        for n in left.nodes(data=True)
+    ] + [
+        SpatialNode(**{**n[1], "name": f"{right_prefix}_{n[1]['name']}"})
+        for n in right.nodes(data=True)
+    ]
+
+    edges = (
+        [
+            SpatialEdge(
+                **{
+                    **e[3],
+                    "start": f"{left_prefix}_{e[3]['start']}",
+                    "stop": f"{left_prefix}_{e[3]['stop']}",
+                },
+            )
+            for e in left.edges(data=True, keys=True)
+        ]
+        + [
+            SpatialEdge(
+                **{
+                    **e[3],
+                    "start": f"{right_prefix}_{e[3]['start']}",
+                    "stop": f"{right_prefix}_{e[3]['stop']}",
+                },
+            )
+            for e in right.edges(data=True, keys=True)
+        ]
+        + links
+    )
+
+    return SpatialGraph(nodes=nodes, edges=edges)
 
 
 def get_closed_triangles(graph: SpatialGraph, nodes: list = []):

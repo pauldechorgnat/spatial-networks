@@ -17,12 +17,14 @@ from .generators import generate_grid_tree_data
 from .geometry_utils import create_circle
 from .geometry_utils import create_circle_arc
 from .geometry_utils import consistent_intersection
+from .geometry_utils import rotate_graph
 
 # graph_utils
 from .graph_utils import get_open_triangles
 from .graph_utils import get_closed_triangles
 from .graph_utils import make_planar
 from .graph_utils import flatten_graph
+from .graph_utils import merge_graphs
 
 # plot utils
 from .plot_utils import plot_shapely_objects
