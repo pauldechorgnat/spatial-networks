@@ -2,40 +2,44 @@ from setuptools import setup, find_packages
 
 from codecs import open
 from os import path
-from os import environ
-import requests
+
+# from os import environ
+# import requests
 
 HERE = path.abspath(path.dirname(__file__))
-VERSION = environ.get("VERSION")
-DEBUG = True
+# VERSION = environ.get("VERSION")
+# DEBUG = True
 
-if not DEBUG:
-    pypi_url = "https://pypi.org/pypi/spatial-networks/json"
-else:
-    pypi_url = "https://test.pypi.org/pypi/spatial-networks/json"
+# if not DEBUG:
+#     pypi_url = "https://pypi.org/pypi/spatial-networks/json"
+# else:
+#     pypi_url = "https://test.pypi.org/pypi/spatial-networks/json"
 
-if not VERSION:
-    response = requests.get(url=pypi_url)
+# if not VERSION:
+#     response = requests.get(url=pypi_url)
 
-    latest_version = response.json()["info"]["version"]
-    version_numbers = latest_version.split(".")
-    VERSION = f"{version_numbers[0]}.{version_numbers[1]}.{int(version_numbers[2]) + 1}"
+#     latest_version = response.json()["info"]["version"]
+#     version_numbers = latest_version.split(".")
+#     VERSION = f"{version_numbers[0]}.{version_numbers[1]}.{int(version_numbers[2]) + 1}"
+
+
+VERSION = "0.0.4"
 
 print(f"VERSION: {VERSION}")
 
 
-with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
+with open(path.join(HERE, "pypi_doc.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 
-with open(path.join(HERE, "requirements.txt"), encoding="utf-8") as f:
+with open(path.join(HERE, "requirements-dev.txt"), encoding="utf-8") as f:
     requirements = f.read().split("\n")
 
 
 setup(
     name="spatial-networks",
     version=VERSION,
-    description="Demo library on Spatial Networks",
+    description="Library to manipulate Spatial Networks",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/pauldechorgnat/spatial-networks",
