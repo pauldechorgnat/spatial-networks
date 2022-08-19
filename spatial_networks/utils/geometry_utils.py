@@ -7,6 +7,20 @@ from shapely.geometry import GeometryCollection
 
 
 def create_circle(center: Point = Point(0, 0), radius: float = 5, nb_points: int = 10):
+    """Returns a LineString representing a circle.
+
+    Args:
+        center (Point, optional): center of the circle.
+            Defaults to Point(0, 0).
+        radius (float, optional): radius of the circle.
+            Defaults to 5.
+        nb_points (int, optional): number of points in the LineString.
+            Increasing this will increase the 'roundness' of the circle.
+            Defaults to 10.
+
+    Returns:
+        LineString: a Linestring representing a circle.
+    """
     center_x, center_y = np.asarray(center.coords)[0]
     points = [
         Point(
@@ -28,6 +42,22 @@ def create_circle_arc(
     center: Point = Point(0, 0),
     nb_points: int = 2,
 ):
+    """Returns a LineString representing a circle arc.
+
+    Args:
+        start (Point, optional): start of the circle arc.
+            Defaults to Point(0, 5).
+        stop (Point, optional): end of the circle arc.
+            Defaults to Point(5, 0).
+        center (Point, optional): center of the circle arc.
+            Defaults to Point(0, 0).
+        nb_points (int, optional): number of points in the circle arc.
+            Increasing this will increase the 'roundness' of the circle arc.
+            Defaults to 2.
+
+    Returns:
+        LineString: a Linestring representing a circle arc.
+    """
     center_x, center_y = np.asarray(center.coords)[0]
     start_x, start_y = np.asarray(start.coords)[0]
     stop_x, stop_y = np.asarray(stop.coords)[0]
@@ -57,7 +87,20 @@ def create_circle_arc(
 
 
 def consistent_intersection(geom, splitter):
-    """Helper function that returns a MultiPoint object for intersections"""
+    """Returns shapely intersections as MultiPoint.
+    `.intersection` method in shapely 1.8.3 returns inconsistent classes.
+    This function helps to make it more consistent.
+
+    Args:
+        geom : any shapely geometric object.
+        splitter : any shapely geometric object
+
+    Raises:
+        TypeError: if the intersections are not Point, MultiPoint or GeometryCollection.
+
+    Returns:
+        shapely.geometry.MultiPoint: a set of intersection points between geom and splitter.
+    """
     intersections = geom.intersection(splitter)
 
     if isinstance(intersections, LineString):
@@ -73,5 +116,6 @@ def consistent_intersection(geom, splitter):
 
     else:
         raise TypeError(
-            f"intersections returned an object of type {type(intersections)}"
+            f"intersections returned an object of type {type(intersections)} "
+            "which is not yet supported."
         )
