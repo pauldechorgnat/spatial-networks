@@ -1,5 +1,7 @@
 import numpy as np
 
+from itertools import combinations
+
 from shapely.geometry import Point
 from shapely.geometry import LineString
 
@@ -7,35 +9,24 @@ from .core_utils import SpatialEdge
 from .core_utils import SpatialNode
 
 
-def generate_random_graph_data(
+def generate_soft_rgg_data(
     n_nodes: int = 40,
-    edge_probability: float = 0.01,
     position_distribution: callable = np.random.uniform,
-    dimension: int = 2,
-    prefix: str = "random",
+    deterrence_function: callable = lambda x: x < 0.5,
+    prefix: str = "soft_rgg",
 ):
+    positions = position_distribution(size=(n_nodes, 2))
     nodes = [
-        SpatialNode(
-            name=f"{prefix}_{i}", geometry=Point(position_distribution(size=dimension))
-        )
+        SpatialNode(name=f"{prefix}_{i}", geometry=Point(positions[i]))
         for i in range(n_nodes)
     ]
 
     edges = []
 
-    for i in range(n_nodes):
-        for j in range(i + 1, n_nodes):
-            if np.random.uniform() < edge_probability:
-                edges.append(
-                    SpatialEdge(
-                        start=nodes[i]["name"],
-                        stop=nodes[j]["name"],
-                        geometry=LineString(
-                            [nodes[i]["geometry"], nodes[j]["geometry"]]
-                        ),
-                    )
-                )
-
+    for node_i, node_j in combinations(nodes, r=2):
+        distance = node_i["geometry"].distance(node_j["geometry"])
+        if deterrence_function(distance):
+            edges.append(SpatialEdge(start=node_i["name"], stop=node_j["name"]))
     return nodes, edges
 
 

@@ -13,13 +13,9 @@ from networkx import DiGraph
 from networkx.drawing import draw_networkx_nodes
 from networkx.drawing import draw_networkx_edges
 
-# from utils import check_node
-# from utils import check_edge
-# from utils import create_circle_arc
-# from utils import generate_star_spatial_network_data
-# from utils import SpatialEdge, SpatialNode
 from .utils import (
     create_circle_arc,
+    generate_soft_rgg_data,
     generate_star_spatial_network_data,
     generate_square_lattice_data,
     generate_triangle_lattice_data,
@@ -30,50 +26,6 @@ from .utils import (
     SpatialGraph,
 )
 
-# import warnings
-
-# warnings.filterwarnings("error")
-
-
-class RandomSpatialGraph(SpatialGraph):
-    """A simple class that creates a Random Graph with random positions"""
-
-    def __init__(
-        self,
-        number_of_nodes: int = 200,
-        edge_probability: float = 0.01,
-        dimension: int = 2,
-        position_distribution: callable = np.random.uniform,
-        prefix: str = "node",
-    ):
-        if dimension not in [2, 3]:
-            raise ValueError(f"dimension should be 2 or 3 not '{dimension}'")
-
-        nodes = [
-            SpatialNode(
-                name=f"{prefix}_{i}",
-                geometry=Point(position_distribution(size=dimension)),
-            )
-            for i in range(number_of_nodes)
-        ]
-
-        edges = []
-
-        for i in range(number_of_nodes):
-            for j in range(i + 1, number_of_nodes):
-                if np.random.uniform() < edge_probability:
-                    edges.append(
-                        SpatialEdge(
-                            start=f"{prefix}_{i}",
-                            stop=f"{prefix}_{j}",
-                            geometry=LineString(
-                                [nodes[i]["geometry"], nodes[j]["geometry"]]
-                            ),
-                        )
-                    )
-
-        SpatialGraph.__init__(self, nodes=nodes, edges=edges)
-
 
 class SoftRGG(SpatialGraph):
     """A simple class that creates a Soft Random Geometric Graph"""
@@ -83,35 +35,38 @@ class SoftRGG(SpatialGraph):
         number_of_nodes: int = 30,
         position_distribution: callable = np.random.uniform,
         deterrence_function: callable = lambda x: x > 0.3,
-        dimension: int = 2,
-        prefix: str = "node",
+        prefix: str = "soft_rgg",
     ):
-        nodes = [
-            SpatialNode(
-                name=f"{prefix}_{i}",
-                geometry=Point(position_distribution(size=dimension)),
-            )
-            for i in range(number_of_nodes)
-        ]
-
-        edges = []
-        for i in range(number_of_nodes):
-            for j in range(i + 1, number_of_nodes):
-                node_i = nodes[i]
-                node_j = nodes[j]
-
-                if deterrence_function(node_i["geometry"].distance(node_j["geometry"])):
-                    edges.append(
-                        SpatialEdge(
-                            start=node_i["name"],
-                            stop=node_j["name"],
-                            geometry=LineString(
-                                [node_i["geometry"], node_j["geometry"]]
-                            ),
-                        )
-                    )
+        nodes, edges = generate_soft_rgg_data(
+            n_nodes=number_of_nodes,
+            position_distribution=position_distribution,
+            deterrence_function=deterrence_function,
+            prefix=prefix,
+        )
 
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
+
+
+class RandomSpatialGraph(SoftRGG):
+    """A simple class that creates a Random Graph with random positions"""
+
+    def __init__(
+        self,
+        number_of_nodes: int = 200,
+        edge_probability: float = 0.01,
+        position_distribution: callable = np.random.uniform,
+        prefix: str = "random",
+    ):
+        self.deterrence_function = lambda x: np.random.uniform() < edge_probability
+        self.edge_probability = edge_probability
+
+        SoftRGG.__init__(
+            self,
+            number_of_nodes=number_of_nodes,
+            position_distribution=position_distribution,
+            prefix=prefix,
+            deterrence_function=self.deterrence_function,
+        )
 
 
 class RandomGeometricGraph(SoftRGG):
@@ -122,8 +77,7 @@ class RandomGeometricGraph(SoftRGG):
         number_of_nodes: int = 200,
         radius: float = 0.1,
         position_distribution: callable = np.random.uniform,
-        dimension: int = 2,
-        prefix: str = "node",
+        prefix: str = "rgg",
     ):
 
         SoftRGG.__init__(
@@ -131,7 +85,6 @@ class RandomGeometricGraph(SoftRGG):
             number_of_nodes=number_of_nodes,
             position_distribution=position_distribution,
             deterrence_function=lambda x: x < (2 * radius),
-            dimension=dimension,
         )
 
 
@@ -360,18 +313,6 @@ class GridTree(SpatialGraph):
 
 
 if __name__ == "__main__":
-
-    # random_spatial_graph = RandomSpatialGraph(number_of_nodes=200)
-    # random_spatial_graph.draw()
-    # plt.show()
-
-    # soft_rgg = SoftRGG(number_of_nodes=200, position_distribution=np.random.normal, deterrence_function=lambda x: x < 0.3)
-    # soft_rgg.draw()
-    # plt.show()
-
-    # star_network = StarSpatialGraph()
-    # star_network.draw()
-    # plt.show()
 
     star_and_ring_network = StarAndRingNetwork(
         number_of_branches=8, nodes_per_branch=6, ring_depths=[2, 5]

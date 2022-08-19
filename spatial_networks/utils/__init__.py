@@ -4,7 +4,7 @@ from .core_utils import SpatialEdge
 from .core_utils import SpatialGraph
 
 # generators
-from .generators import generate_random_graph_data
+from .generators import generate_soft_rgg_data
 from .generators import generate_star_spatial_network_data
 from .generators import generate_square_lattice_data
 from .generators import generate_triangle_lattice_data
