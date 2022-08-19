@@ -87,6 +87,7 @@ class RandomGeometricGraph(SoftRGG):
             number_of_nodes=number_of_nodes,
             position_distribution=position_distribution,
             deterrence_function=lambda x: x < (2 * radius),
+            prefix=prefix,
         )
 
 

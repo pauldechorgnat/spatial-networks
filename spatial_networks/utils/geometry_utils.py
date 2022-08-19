@@ -119,3 +119,34 @@ def consistent_intersection(geom, splitter):
             f"intersections returned an object of type {type(intersections)} "
             "which is not yet supported."
         )
+
+
+def rotate_graph(graph: SpatialGraph, angle: float = 90, origin: Point = "center"):
+    """Returns a rotated SpatialGraph
+
+    Args:
+        graph (SpatialGraph): graph to rotate.
+        angle (float, optional): rotation angle in degrees.
+            Defaults to 90.
+        origin (Point, optional): center of the rotation.
+            Defaults to "center".
+
+    Returns:
+        SpatialGraph: rotated SpatialGraph
+    """
+    new_points = rotate(graph.get_points(), angle=angle, origin=origin)
+    new_segments = rotate(graph.get_segments(), angle=angle, origin=origin)
+
+    nodes = [
+        SpatialNode(**{**old_data[1], **{"geometry": new_position}})
+        for new_position, old_data in zip(new_points.geoms, graph.nodes(data=True))
+    ]
+
+    edges = [
+        SpatialEdge(**{**old_data[3], **{"geometry": new_segment}})
+        for new_segment, old_data in zip(
+            new_segments.geoms, graph.edges(data=True, keys=True)
+        )
+    ]
+
+    return SpatialGraph(nodes=nodes, edges=edges)
