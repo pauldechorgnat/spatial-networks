@@ -10,6 +10,7 @@ from spatial_networks.spatial_networks import TriangleLattice
 from spatial_networks.spatial_networks import HexagonalLattice
 from spatial_networks.spatial_networks import RegularTree
 from spatial_networks.spatial_networks import GridTree
+from spatial_networks.spatial_networks import CircularTree
 
 # from utils import check_node
 # from utils import check_edge

@@ -15,12 +15,14 @@ from networkx.drawing import draw_networkx_edges
 
 from .utils import (
     create_circle_arc,
+    generate_grid_tree_data,
     generate_soft_rgg_data,
     generate_star_spatial_network_data,
     generate_square_lattice_data,
     generate_triangle_lattice_data,
     generate_hexagonal_lattice_data,
     generate_regular_tree_data,
+    generate_circular_tree_data,
     SpatialEdge,
     SpatialNode,
     SpatialGraph,
@@ -120,32 +122,9 @@ class StarAndRingNetwork(SpatialGraph):
             number_of_branches=number_of_branches,
             nodes_per_branch=nodes_per_branch,
             prefix=prefix,
+            ring_depths=ring_depths,
         )
-        # Adding the rings
-        for depth in ring_depths:
-            if depth > nodes_per_branch:
-                raise ValueError(
-                    f"Ring depth {depth} cannot be larger than Branch depth {nodes_per_branch}"
-                )
-            for k in range(number_of_branches):
-                start_name = f"{prefix}_{depth}_{k}"
-                stop_name = f"{prefix}_{depth}_{(k + 1) % number_of_branches}"
 
-                start_node = points[start_name]
-                stop_node = points[stop_name]
-                arc = create_circle_arc(
-                    start=start_node,
-                    stop=stop_node,
-                    center=points[f"{prefix}_0_0"],
-                    nb_points=depth * 3,  # could be changed...
-                )
-                edges.append(
-                    SpatialEdge(
-                        start=start_name,
-                        stop=stop_name,
-                        geometry=arc,
-                    )
-                )
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
 
 
@@ -249,64 +228,38 @@ class GridTree(SpatialGraph):
         inner_semi_height: int = 5,
     ):
 
-        # generating inner lattice
-        nodes, edges = generate_square_lattice_data(
-            square_height=inner_square_height,
-            square_width=inner_square_width,
-            squares_per_line=2 * inner_semi_width,
-            nb_lines=2 * inner_semi_height,
-            prefix="inner",
+        nodes, edges = generate_grid_tree_data(
+            suburb_depth=suburb_depth,
+            suburb_branching_factor=suburb_branching_factor,
+            suburb_leaf_spacing=suburb_leaf_spacing,
+            suburb_step_size=suburb_step_size,
+            suburb_spacing=suburb_spacing,
+            inner_square_height=inner_square_height,
+            inner_square_width=inner_square_width,
+            inner_semi_width=inner_semi_width,
+            inner_semi_height=inner_semi_height,
         )
 
-        anchors = [
-            Point(-suburb_spacing, inner_semi_height * inner_square_height),  # west
-            Point(
-                2 * inner_semi_width * inner_square_width + suburb_spacing,
-                inner_semi_height * inner_square_height,
-            ),  # east
-            Point(inner_semi_width * inner_square_width, -suburb_spacing),  # south
-            Point(
-                inner_semi_width * inner_square_width,
-                2 * inner_semi_height * inner_square_height + suburb_spacing,
-            ),  # north
-        ]
+        SpatialGraph.__init__(self, nodes=nodes, edges=edges)
 
-        rotations = [270, 90, 180, 0]
-        prefixes = ["west", "east", "south", "north"]
 
-        for r, a, p in zip(rotations, anchors, prefixes):
-            nodes_, edges_ = generate_regular_tree_data(
-                tree_depth=suburb_depth,
-                branching_factor=suburb_branching_factor,
-                leaf_spacing=suburb_leaf_spacing,
-                step_size=suburb_step_size,
-                root=a,
-                rotation=r,
-                prefix=p,
-            )
-            nodes.extend(nodes_)
-            edges.extend(edges_)
-
-        edges.append(
-            SpatialEdge(start=f"inner_{inner_semi_width}_{0}", stop=f"south_{0}_{0}")
-        )
-
-        edges.append(
-            SpatialEdge(
-                start=f"inner_{inner_semi_width}_{2 * inner_semi_height}",
-                stop=f"north_{0}_{0}",
-            )
-        )
-
-        edges.append(
-            SpatialEdge(start=f"inner_{0}_{inner_semi_height}", stop=f"west_{0}_{0}")
-        )
-
-        edges.append(
-            SpatialEdge(
-                start=f"inner_{2 * inner_semi_width}_{inner_semi_height}",
-                stop=f"east_{0}_{0}",
-            )
+class CircularTree(SpatialGraph):
+    def __init__(
+        self,
+        branching_factor: int = 4,
+        tree_depth: int = 4,
+        ring_depths: list = [],
+        step_size: list = 1.0,
+        prefix: str = "circular_tree",
+        root: Point = Point(0, 0),
+    ):
+        nodes, edges = generate_circular_tree_data(
+            branching_factor=branching_factor,
+            tree_depth=tree_depth,
+            ring_depths=ring_depths,
+            step_size=step_size,
+            prefix=prefix,
+            root=root,
         )
 
         SpatialGraph.__init__(self, nodes=nodes, edges=edges)
