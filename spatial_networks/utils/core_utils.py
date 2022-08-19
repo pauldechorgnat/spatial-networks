@@ -4,11 +4,6 @@ Contains basic data structures:
 - SpatialNode
 - SpatialEdge
 - SpatialGraph
-
-And verification functions:
-
-- check_node
-- check_edge
 """
 
 from collections.abc import Mapping
@@ -16,6 +11,7 @@ from collections.abc import Hashable
 
 import numpy as np
 import networkx as nx
+import matplotlib
 import matplotlib.pyplot as plt
 
 from shapely.geometry import Point
@@ -27,7 +23,21 @@ from networkx import MultiGraph
 
 
 class SpatialNode(Mapping):
-    def __init__(self, name: str, geometry: Point, **attr):
+    """Class to implement Nodes in Spatial Graphs"""
+
+    def __init__(self, name: Hashable, geometry: Point, **attr):
+        """Constructor of a SpatialNode
+
+        Args:
+            name (Hashable): name of the node
+            geometry (Point): location of the node
+            **attr: any other attribute of the node
+
+        Raises:
+            TypeError: if `name` is not a Hashable object or `name` is None
+            TypeError: if `geometry` is not shapely.geometry.Point object
+            ValueError: if `geometry` is a three-dimension shapely.geometry.Point
+        """
         if (not name) or (not isinstance(name, Hashable)):
             raise TypeError(
                 "'name' should be a hashable object which is not None. "
@@ -65,10 +75,30 @@ class SpatialNode(Mapping):
 
 
 class SpatialEdge(Mapping):
-    def __init__(self, start: str, stop: str, geometry: LineString = None, **attr):
+    """Class to implement Edges in Spatial Graphs"""
+
+    def __init__(
+        self, start: Hashable, stop: Hashable, geometry: LineString = None, **attr
+    ):
+        """Constructor of a SpatialEdge
+
+        Args:
+            start (Hashable): name of the starting node of the edge
+            stop (Hashable): name of the end node of the edge
+            geometry (LineString, optional): shape of the edge.
+                If not specified, the geometry will be assumed to be a straight line from `start` to `end`.
+                Defaults to None.
+            **attr: any other attribute of the edge. Cannot be `key`.
+
+        Raises:
+            TypeError: if `start` is not a Hashable object or `name` is None.
+            TypeError: if `stop` is not a Hashable object or `name` is None.
+            TypeError: if `geometry` is not None or a shapely.geometry.LineString object.
+            ValueError: if `key` passed in the constructor
+        """
         if (not start) or (not isinstance(start, Hashable)):
             raise TypeError(
-                "'name' should be a hashable object which is not None. "
+                "'start' should be a hashable object which is not None. "
                 f"Received a '{type(start)}' object"
             )
         if (not stop) or (not isinstance(stop, Hashable)):
@@ -141,22 +171,18 @@ class SpatialGraph(MultiGraph):
         """
         MultiGraph.__init__(self=self)
 
-        for n in nodes:
-            self.add_node(n)
+        self.add_nodes_from(nodes_to_add=nodes)
+        self.add_edges_from(edges_to_add=edges)
 
-        for e in edges:
-            self.add_edge(e)
+    def add_node(self, node_for_adding: SpatialNode):
+        """Adds a SpatialNode to the SpatialGraph
 
-    def node_properties_dict(self):
-        return {n[0]: n[1] for n in self.nodes(data=True)}
+        Args:
+            node_for_adding (SpatialNode): a SpatialNode to be added to the graph.
 
-    def edge_properties_dict(self):
-        edge_dict = {}
-        for e in self.edges(data=True, keys=True):
-            edge_dict.get((e[0], e[1]), []).append(e[3])
-        return edge_dict
-
-    def add_node(self, node_for_adding):
+        Raises:
+            TypeError: if `node_for_adding` is not a SpatialNode object.
+        """
         if not isinstance(node_for_adding, SpatialNode):
             raise TypeError(
                 "'node_for_adding' should be a SpatialNode. "
@@ -166,7 +192,18 @@ class SpatialGraph(MultiGraph):
             self, node_for_adding=node_for_adding["name"], **node_for_adding
         )
 
-    def add_edge(self, edge_to_add):
+    def add_edge(self, edge_to_add: SpatialEdge):
+        """Adds a SpatialEdge to the SpatialGraph
+
+        Args:
+            edge_to_add (SpatialEdge): a SpatialEdge to be added to the graph.
+
+        Raises:
+            TypeError: if `edge_to_add` is not a SpatialEdge
+            ValueError: if `edge_to_add['start']` is not in the graph.
+            ValueError: if `edge_to_add['stop']` is not in the graph.
+            TypeError: if `edge_to_add['geometry']` is not a shapely.geometry.LineString object or None.
+        """
         if not isinstance(edge_to_add, SpatialEdge):
             raise TypeError(
                 "'edge_for_adding' should be a SpatialNode. "
@@ -198,11 +235,63 @@ class SpatialGraph(MultiGraph):
             self, edge_to_add["start"], edge_to_add["stop"], key=None, **edge_to_add
         )
 
+    def get_points(self):
+        """Returns all node positions as a shapely.geometry.MultiPoint object
+
+        Returns:
+            shapely.geometry.MultiPoint: a MultiPoint object containing all the node positions
+        """
+        return MultiPoint([n[1]["geometry"] for n in self.nodes(data=True)])
+
+    def get_segments(self, include: list = None, exclude: list = None):
+        """Returns all edge shapes as a shapely.geometry.MultiLineString object
+
+        Args:
+            include (list, optional): list of edges to include.
+                Defaults to None.
+            exclude (list, optional): list of edges to exclude.
+                Defaults to None.
+
+        Returns:
+            shapely.geometry.MultiLineString: a MultiPoint object containing all the edge shapes
+        """
+        if include:
+            edges = self.edges(nbunch=include, data=True)
+        else:
+            edges = self.edges(data=True, keys=True)
+        if exclude:
+            edges = [e for e in edges if (e[0], e[1], e[2]) not in exclude]
+
+        result = MultiLineString([e[3]["geometry"] for e in edges])
+        return result
+
     def draw_nodes(
-        self, node_color="#EDC339", node_size=100, include_names=False, ax=None
+        self,
+        node_color: str = "#EDC339",
+        node_size: int = 100,
+        include_names: bool = False,
+        ax: matplotlib.axes._subplots.AxesSubplot = None,
+        figsize: tuple = (5, 5),
     ):
+        """Returns a figure with the nodes of the SpatialGraph
+
+        Args:
+            node_color (str, optional): color used to represent nodes.
+                Defaults to "#EDC339".
+            node_size (int, optional): size used to represent nodes.
+                Defaults to 100.
+            include_names (bool, optional): if True, annotates the names of the nodes.
+                Defaults to False.
+            ax (matplotlib.axes._subplots.AxesSubplot, optional): a matplotlib ax.
+                Defaults to None.
+            figsize (tuple, optional): size of the figure if ax is None.
+                Defaults to (5, 5).
+
+        Returns:
+            matplotlib.axes._subplots.AxesSubplot: a matplotlib ax
+        """
         if not ax:
-            fig, ax = plt.subplots(1, 1)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
         xs, ys = [], []
 
         node_properties = {n[0]: n[1] for n in self.nodes(data=True)}
@@ -224,55 +313,106 @@ class SpatialGraph(MultiGraph):
                 )
         return ax
 
-    def get_points(self):
-        return MultiPoint([n[1]["geometry"] for n in self.nodes(data=True)])
+    def draw_edges(
+        self,
+        edge_color: str = "#01577D",
+        ax: matplotlib.axes._subplots.AxesSubplot = None,
+        figsize: tuple = (5, 5),
+    ):
+        """Returns a figure with the edges of the SpatialGraph
 
-    def get_segments(self, include: list = None, exclude: list = None):
-        if include:
-            edges = self.edges(nbunch=include, data=True)
-        else:
-            edges = self.edges(data=True, keys=True)
-        if exclude:
-            edges = [e for e in edges if (e[0], e[1], e[2]) not in exclude]
+        Args:
+            edge_color (str, optional): color used to represent the edges.
+                Defaults to "#01577D".
+            ax (matplotlib.axes._subplots.AxesSubplot, optional): a matplotlib ax.
+                Defaults to None.
+            figsize (tuple, optional): size of the figure if ax is None.
+                Defaults to (5, 5).
 
-        result = MultiLineString([e[3]["geometry"] for e in edges])
-        return result
-
-    def draw_edges(self, edge_color="#01577D", ax=None):
+        Returns:
+            matplotlib.axes._subplots.AxesSubplot: a matplotlib ax
+        """
         if not ax:
-            fig, ax = plt.subplots(1, 1)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
         for e in self.edges(data=True, keys=True):
             coordinates = np.asarray(e[3]["geometry"].coords)
             ax.plot(coordinates[:, 0], coordinates[:, 1], color=edge_color, zorder=-1)
         return ax
 
-    def draw(self, include_names=False, ax=None, include_axis=False):
+    def draw(
+        self,
+        include_names: bool = False,
+        include_axis: bool = False,
+        ax: matplotlib.axes._subplots.AxesSubplot = None,
+        figsize: tuple = (5, 5),
+    ):
+        """Returns a figure with the complete SpatialGraph
+
+        Args:
+            include_names (bool, optional): if True, annotates the names of the nodes.
+                Defaults to False.
+            include_axis (bool, optional): if True, draws the axis.
+                Defaults to False.
+            ax (matplotlib.axes._subplots.AxesSubplot, optional): a matplotlib ax.
+                Defaults to None.
+            figsize (tuple, optional): size of the figure if ax is None.
+                Defaults to (5, 5).
+
+        Returns:
+            matplotlib.axes._subplots.AxesSubplot: a matplotlib ax
+        """
 
         if not ax:
-            fig, ax = plt.subplots(1, 1)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
         self.draw_edges(ax=ax)
         self.draw_nodes(ax=ax, include_names=include_names)
         if not include_axis:
             ax.axis("off")
         return ax
 
-    def add_edges_from(self, edges_to_add):
+    def add_edges_from(self, edges_to_add: list):
+        """Adds multiple SpatialEdge objects to the SpatialGraph
+
+        Args:
+            edges_to_add (list): a list of SpatialEdge objects to add to the graph.
+        """
         for e in edges_to_add:
             self.add_edge(e)
 
-    def add_nodes_from(self, nodes_to_add):
+    def add_nodes_from(self, nodes_to_add: list):
+        """Adds multiple SpatialNode to the SpatialGraph
+
+        Args:
+            nodes_to_add (list): a list of SpatialNode objects to add to the graph.
+        """
         for n in nodes_to_add:
             self.add_node(n)
 
-    def remove_edge(self, edge_to_remove, key=None):
+    def remove_edge(self, edge_to_remove, key: int = None):
+        """Removes an edge from the graph
+
+        Args:
+            edge_to_remove (SpatialEdge): the reference of the edge to remove.
+                This argument should be a SpatialEdge but you can also pass a tuple
+                containing the start and end node names.
+            key (int, optional): index of the edge to remove.
+                Defaults to None.
+        """
         if isinstance(edge_to_remove, SpatialEdge):
             u, v = edge_to_remove["start"], edge_to_remove["stop"]
             MultiGraph.remove_edge(self, u=u, v=v, key=key)
         else:
             u, v = edge_to_remove
-            MultiGraph.remove_edge(self, u=u, v=v)
+            MultiGraph.remove_edge(self, u=u, v=v, key=key)
 
     def remove_node(self, n):
+        """Removes a node from the graph
+
+        Args:
+            n (SpatialNode): the reference of the node to remove.
+                This argument should be a SpatialNode but you can also pass a Hashable
+                object representing the name of the node.
+        """
         if isinstance(n, SpatialNode):
             MultiGraph.remove_node(self, n=n["name"])
         elif isinstance(n, Hashable):
@@ -282,15 +422,35 @@ class SpatialGraph(MultiGraph):
                 f"'n' should be a 'SpatialNode' or a hashable object, not {type(n)}"
             )
 
-    def remove_edges_from(self, edges_to_remove):
+    def remove_edges_from(self, edges_to_remove: list):
+        """Removes multiple edges from the graph
+
+        Args:
+            edges_to_remove (list): list of edges to remove (see remove_edge)
+        """
         for e in edges_to_remove:
             self.remove_edge(edge_to_remove=e)
 
-    def remove_nodes_from(self, nodes_to_remove):
+    def remove_nodes_from(self, nodes_to_remove: list):
+        """Removes multiple nodes from the graph
+
+        Args:
+            nodes_to_remove (list): list of nodes to remove (see remove_node)
+        """
         for n in nodes_to_remove:
             self.remove_node(node_to_remove=n)
 
     def route_distance(self, node_i_name: str, node_j_name: str):
+        """Computes the route distance between two nodes.
+        The route distance is the distance computed by using the shortest path.
+
+        Args:
+            node_i_name (str): name of the first node
+            node_j_name (str): name of the second node
+
+        Returns:
+            float: route distance between `node_i_name` and `node_j_name`
+        """
         try:
             return nx.shortest_path_length(
                 self, source=node_i_name, target=node_j_name, weight="length"
@@ -299,13 +459,34 @@ class SpatialGraph(MultiGraph):
             return np.NaN
 
     def metric_distance(self, node_i_name: str, node_j_name: str):
-        node_properties = self.node_properties_dict()
+        """Computes the metric distance between two nodes.
+        The metric distance is the distance 'as crow flies' between nodes.
+
+        Args:
+            node_i_name (str): name of the first node
+            node_j_name (str): name of the second node
+
+        Returns:
+            float: metric distance between `node_i_name` and `node_j_name`
+        """
+        node_properties = {n[0]: n[1] for n in self.nodes(data=True)}
         node_i = node_properties[node_i_name]
         node_j = node_properties[node_j_name]
 
         return node_i["geometry"].distance(node_j["geometry"])
 
     def detour_index(self, node_i_name: str, node_j_name: str):
+        """Computes the detour index between two nodes.
+        The detour index is the ratio of the route distance by the metric distance.
+        It measures how much detour using the graph implies.
+
+        Args:
+            node_i_name (str): name of the first node
+            node_j_name (str): name of the second node
+
+        Returns:
+            float: detour index between `node_i_name` and `node_j_name`
+        """
         return self.route_distance(node_i_name, node_j_name) / self.metric_distance(
             node_i_name, node_j_name
         )
