@@ -23,7 +23,7 @@ HERE = path.abspath(path.dirname(__file__))
 #     VERSION = f"{version_numbers[0]}.{version_numbers[1]}.{int(version_numbers[2]) + 1}"
 
 
-VERSION = "0.0.4"
+VERSION = "0.0.8"
 
 print(f"VERSION: {VERSION}")
 
@@ -32,7 +32,7 @@ with open(path.join(HERE, "pypi_doc.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 
-with open(path.join(HERE, "requirements-dev.txt"), encoding="utf-8") as f:
+with open(path.join(HERE, "requirements.txt"), encoding="utf-8") as f:
     requirements = f.read().split("\n")
 
 
@@ -55,7 +55,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent",
     ],
-    packages=["spatial_networks"],
+    packages=find_packages(include=["spatial_networks", "spatial_networks.*"]),
     include_package_data=True,
     install_requires=requirements,
 )

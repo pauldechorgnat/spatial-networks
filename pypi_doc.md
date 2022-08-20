@@ -2,7 +2,7 @@
 
 ## Introduction
 
-### version 0.0.4
+### version 0.0.8
 
 This library is a short library that allows you to manipulate Spatial Networks (or Spatial Graphs).
 It relies heavily on [NetworkX](https://networkx.org/) and [Shapely](https://shapely.readthedocs.io/en/stable/manual.html).

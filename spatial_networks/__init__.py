@@ -1,18 +1,35 @@
-from spatial_networks.spatial_networks import SpatialGraph
+import spatial_networks.utils as utils
 
-from spatial_networks.spatial_networks import RandomSpatialGraph
-from spatial_networks.spatial_networks import RandomGeometricGraph
-from spatial_networks.spatial_networks import SoftRGG
-from spatial_networks.spatial_networks import StarSpatialGraph
-from spatial_networks.spatial_networks import StarAndRingNetwork
-from spatial_networks.spatial_networks import SquareLattice
-from spatial_networks.spatial_networks import TriangleLattice
-from spatial_networks.spatial_networks import HexagonalLattice
-from spatial_networks.spatial_networks import RegularTree
-from spatial_networks.spatial_networks import GridTree
-from spatial_networks.spatial_networks import CircularTree
+from spatial_networks.utils.core_utils import SpatialEdge, SpatialGraph, SpatialNode
+from .spatial_networks import (
+    RandomSpatialGraph,
+    RandomGeometricGraph,
+    SoftRGG,
+    StarSpatialGraph,
+    StarAndRingNetwork,
+    SquareLattice,
+    TriangleLattice,
+    HexagonalLattice,
+    RegularTree,
+    GridTree,
+    CircularTree,
+)
 
-# from utils import check_node
-# from utils import check_edge
+__all__ = [
+    "SpatialNode",
+    "SpatialEdge",
+    "SpatialGraph",
+    "RandomSpatialGraph",
+    "RandomGeometricGraph",
+    "SoftRGG",
+    "StarSpatialGraph",
+    "StarAndRingNetwork",
+    "SquareLattice",
+    "TriangleLattice",
+    "HexagonalLattice",
+    "RegularTree",
+    "GridTree",
+    "CircularTree",
+]
 
-from .utils import *
+__version__ = "0.0.7"
