@@ -9,6 +9,7 @@ spatial_networks.egg-info
 notes.md
 docs
 .env
+notebooks/*
 !notebooks/0*.ipynb
 VERSION
 scripts/
