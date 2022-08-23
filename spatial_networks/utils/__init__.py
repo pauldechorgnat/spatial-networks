@@ -30,6 +30,14 @@ from spatial_networks.utils.graph_utils import (
     merge_graphs,
 )
 
+# io utils
+from spatial_networks.utils.graph_io import (
+    convert_geojson_data_to_spatial_graph,
+    convert_graph_to_geojson,
+    read_spatial_graph_from_geojson_file,
+    write_spatial_graph_to_geojson_file,
+)
+
 # plot utils
 from spatial_networks.utils.plot_utils import plot_shapely_objects
 
