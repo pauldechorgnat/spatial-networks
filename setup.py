@@ -23,7 +23,7 @@ HERE = path.abspath(path.dirname(__file__))
 #     VERSION = f"{version_numbers[0]}.{version_numbers[1]}.{int(version_numbers[2]) + 1}"
 
 
-VERSION = "0.0.8"
+VERSION = "0.0.9"
 
 print(f"VERSION: {VERSION}")
 
@@ -57,5 +57,6 @@ setup(
     ],
     packages=find_packages(include=["spatial_networks", "spatial_networks.*"]),
     include_package_data=True,
+    package_data={"": ["data/*.json"]},
     install_requires=requirements,
 )
