@@ -11,6 +11,7 @@ docs
 .env
 notebooks/*
 !notebooks/0*.ipynb
+!notebooks/my_graph.json
 VERSION
 scripts/
 tests/
