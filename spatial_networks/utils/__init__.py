@@ -38,6 +38,9 @@ from spatial_networks.utils.graph_io import (
     write_spatial_graph_to_geojson_file,
 )
 
+# loaders utils
+from spatial_networks.utils.loaders import load_paris_subway
+
 # plot utils
 from spatial_networks.utils.plot_utils import plot_shapely_objects
 
@@ -63,4 +66,9 @@ __all__ = [
     "flatten_graph",
     "merge_graphs",
     "plot_shapely_objects",
+    "convert_geojson_data_to_spatial_graph",
+    "convert_graph_to_geojson",
+    "read_spatial_graph_from_geojson_file",
+    "write_spatial_graph_to_geojson_file",
+    "load_paris_subway",
 ]
