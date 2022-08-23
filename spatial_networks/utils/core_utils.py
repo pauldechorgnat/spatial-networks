@@ -379,6 +379,7 @@ class SpatialGraph(MultiGraph):
         include_axis: bool = False,
         ax=None,
         figsize: tuple = (5, 5),
+        aspect_ratio: float = None,
     ):
         """Returns a figure with the complete SpatialGraph
 
@@ -391,6 +392,8 @@ class SpatialGraph(MultiGraph):
                 Defaults to None.
             figsize (tuple, optional): size of the figure if ax is None.
                 Defaults to (5, 5).
+            aspect_ratio (float, optional): aspect ratio between x and y.
+                Defaults to None.
 
         Returns:
             Matplotlib Axes object.
@@ -402,6 +405,8 @@ class SpatialGraph(MultiGraph):
         self.draw_nodes(ax=ax, include_names=include_names)
         if not include_axis:
             ax.axis("off")
+        if aspect_ratio is not None:
+            ax.set_aspect(aspect_ratio)
         return ax
 
     def add_edges_from(self, edges_to_add: list):
