@@ -38,11 +38,21 @@ class SpatialNode(Mapping):
             TypeError: if `geometry` is not shapely.geometry.Point object
             ValueError: if `geometry` is a three-dimension shapely.geometry.Point
         """
+        self._check_name(name=name)
+        self._check_geometry(geometry=geometry)
+
+        self.name = name
+        self.geometry = geometry
+        self.attributes = {**attr, **{"name": name, "geometry": geometry}}
+
+    def _check_name(self, name):
         if (name is None) or (not isinstance(name, Hashable)):
             raise TypeError(
                 "'name' should be a hashable object which is not None. "
                 f"Received a '{type(name)}' object"
             )
+
+    def _check_geometry(self, geometry):
         if not isinstance(geometry, Point):
             raise TypeError(
                 "'geometry' should be a shapely.geometry.Point object. "
@@ -50,10 +60,6 @@ class SpatialNode(Mapping):
             )
         if geometry.has_z:
             raise ValueError("'geometry' should be a two-dimension object.")
-
-        self.name = name
-        self.geometry = geometry
-        self.attributes = {**attr, **{"name": name, "geometry": geometry}}
 
     def __getitem__(self, attr_name):
         return self.attributes[attr_name]
@@ -69,20 +75,10 @@ class SpatialNode(Mapping):
 
     def __setitem__(self, attr_name, attr_value):
         if attr_name == "name":
+            self._check_name(name=attr_value)
             self.name = attr_value
-            if (attr_value is None) or (not isinstance(attr_value, Hashable)):
-                raise TypeError(
-                    "'name' should be a hashable object which is not None. "
-                    f"Received a '{type(name)}' object"
-                )
         elif attr_name == "geometry":
-            if not isinstance(attr_value, Point):
-                raise TypeError(
-                    "'geometry' should be a shapely.geometry.Point object. "
-                    f"Received a '{type(attr_value)}' object."
-                )
-            if attr_value.has_z:
-                raise ValueError("'geometry' should be a two-dimension object.")
+            self._check_geometry(attr_value)
             self.geometry = attr_value
         self.attributes[attr_name] = attr_value
 
@@ -112,21 +108,10 @@ class SpatialEdge(Mapping):
             TypeError: if `geometry` is not None or a shapely.geometry.LineString object.
             ValueError: if `key` passed in the constructor
         """
-        if (start is None) or (not isinstance(start, Hashable)):
-            raise TypeError(
-                "'start' should be a hashable object which is not None. "
-                f"Received a '{type(start)}' object"
-            )
-        if (stop is None) or (not isinstance(stop, Hashable)):
-            raise TypeError(
-                "'stop' should be a hashable object which is not None. "
-                f"Received a '{type(stop)}' object"
-            )
-        if (geometry is not None) and (not isinstance(geometry, LineString)):
-            raise TypeError(
-                "'geometry' should be a shapely.geometry.LineString object or None. "
-                f"Received a '{type(geometry)}' object."
-            )
+        self._check_start(start=start)
+        self._check_stop(stop=stop)
+        self._check_geometry(geometry=geometry)
+        self._check_attributes(attributes=attr)
         self.start = start
         self.stop = stop
         self.geometry = geometry
@@ -134,8 +119,6 @@ class SpatialEdge(Mapping):
             **attr,
             **{"start": start, "stop": stop, "geometry": geometry},
         }
-        if "key" in self.attributes:
-            raise ValueError("'key' cannot be an attribute of a SpatialEdge")
 
     def __getitem__(self, attr_name):
         return self.attributes[attr_name]
@@ -150,33 +133,45 @@ class SpatialEdge(Mapping):
         return iter(self.attributes)
 
     def __setitem__(self, attr_name, attr_value):
+        self._check_attributes(attributes=[attr_name])
         if attr_name == "start":
-            if (attr_value is None) or (not isinstance(attr_value, Hashable)):
-                raise TypeError(
-                    "'start' should be a hashable object which is not None. "
-                    f"Received a '{type(attr_value)}' object"
-                )
+            self._check_start(start=attr_value)
             self.start = attr_value
         elif attr_name == "stop":
-            if (attr_value is None) or (not isinstance(attr_value, Hashable)):
-                raise TypeError(
-                    "'stop' should be a hashable object which is not None. "
-                    f"Received a '{type(attr_value)}' object"
-                )
+            self._check_stop(stop=attr_value)
             self.stop = attr_value
         elif attr_name == "geometry":
-            if (attr_value is not None) and (not isinstance(attr_value, LineString)):
-                raise TypeError(
-                    "'geometry' should be a shapely.geometry.LineString object or None. "
-                    f"Received a '{type(attr_value)}' object."
-                )
-        elif attr_name == "key":
-            raise ValueError("'key' cannot be an attribute of a SpatialEdge")
+            self._check_geometry(geometry=attr_value)
 
         self.attributes[attr_name] = attr_value
 
     def __str__(self):
         return f"SpatialEdge from node '{self.start}' to node '{self.stop}'"
+
+    def _check_start(self, start):
+        if (start is None) or (not isinstance(start, Hashable)):
+            raise TypeError(
+                "'start' should be a hashable object which is not None. "
+                f"Received a '{type(start)}' object"
+            )
+
+    def _check_stop(self, stop):
+        if (stop is None) or (not isinstance(stop, Hashable)):
+            raise TypeError(
+                "'stop' should be a hashable object which is not None. "
+                f"Received a '{type(stop)}' object"
+            )
+
+    def _check_geometry(self, geometry):
+        if (geometry is not None) and (not isinstance(geometry, LineString)):
+            raise TypeError(
+                "'geometry' should be a shapely.geometry.LineString object or None. "
+                f"Received a '{type(geometry)}' object."
+            )
+
+    def _check_attributes(self, attributes):
+        if "key" in attributes:
+            raise ValueError("'key' cannot be an attribute of a SpatialEdge")
 
 
 class SpatialGraph(MultiGraph):
@@ -469,6 +464,12 @@ class SpatialGraph(MultiGraph):
         """
         for e in edges_to_remove:
             self.remove_edge(edge_to_remove=e)
+
+    def _get_nodes(self):
+        return [SpatialNode(**n[1]) for n in self.nodes(data=True)]
+
+    def _get_edges(self):
+        return [SpatialEdge(**e[3]) for e in self.edges(data=True, keys=True)]
 
     def remove_nodes_from(self, nodes_to_remove: list):
         """Removes multiple nodes from the graph
